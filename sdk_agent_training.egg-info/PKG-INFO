@@ -1,0 +1,62 @@
+Metadata-Version: 2.4
+Name: sdk-agent-training
+Version: 0.1.0
+Summary: Training and evaluation corpus for mainsequence-sdk agent_scaffold skills
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: mainsequence
+Requires-Dist: pyyaml
+Provides-Extra: dev
+Requires-Dist: pytest>=8.3; extra == "dev"
+Requires-Dist: ruff>=0.6; extra == "dev"
+
+# SDK Agent Training
+
+This repository stores prompt cases, expected outputs, and recorded runs for testing the `agent_scaffold` skills bundled with [`mainsequence-sdk`](/Users/jose/code/MainSequenceClientSide/mainsequence-sdk/README.md).
+
+The structure separates three concerns:
+
+- `cases/`: the stable training and evaluation corpus
+- `snapshots/`: versioned snapshots of the SDK skill bundle being tested
+- `runs/`: model outputs grouped by SDK version, agent, and model
+
+## Layout
+
+```text
+SdkAgentTraining/
+├── cases/
+│   ├── general/
+│   └── skills/
+├── docs/
+├── reports/
+├── runs/
+│   └── sdk/<sdk-version>/<agent>/<model>/<timestamp>/
+├── scripts/
+└── snapshots/
+    └── sdk/<sdk-version>/agent_scaffold/
+```
+
+## Setup
+
+```bash
+uv sync
+uv run python scripts/populate_training_skills.py --sdk-root ../mainsequence-sdk
+```
+
+The local dependency is declared through `tool.uv.sources`, so this repo tracks the sibling checkout at `../mainsequence-sdk`.
+
+## Workflow
+
+1. Populate or refresh the skill catalog from the SDK bundle.
+2. Add prompt cases under `cases/general/` or `cases/skills/<skill-path>/cases/`.
+3. Create a versioned run folder before executing agents.
+4. Store outputs and evaluation artifacts inside the run folder.
+
+## Useful commands
+
+```bash
+uv run python scripts/populate_training_skills.py --sdk-root ../mainsequence-sdk
+uv run python scripts/create_run.py --agent codex --model gpt-5.4 --sdk-root ../mainsequence-sdk
+```
+
+See [docs/conventions.md](/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/docs/conventions.md) for the case and run format, and [docs/sdk-cli-notes.md](/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/docs/sdk-cli-notes.md) for the CLI findings that drove this scaffold.

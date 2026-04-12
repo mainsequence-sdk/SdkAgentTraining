@@ -1,0 +1,22 @@
+id: or-027-create-crontab-job-command
+title: Author a crontab job creation command
+skill_path: platform_operations/orchestration_and_releases
+sdk_version: 3.17.33
+tags:
+- cli
+- jobs
+- crontab
+- authoring
+difficulty: medium
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+- Uses `project jobs create`
+- Uses `--schedule-type crontab`
+- Uses the requested schedule expression
+- Includes `--related-image-id 77`
+source_docs:
+- docs/tutorial/scheduling_jobs.md
+- docs/knowledge/infrastructure/scheduling_jobs.md

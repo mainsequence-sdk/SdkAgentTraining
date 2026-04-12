@@ -1,0 +1,23 @@
+id: or-049-write-artifact-upload-snippet
+title: Author an Artifact upload snippet
+skill_path: platform_operations/orchestration_and_releases
+sdk_version: 3.17.33
+tags:
+- python
+- artifacts
+- upload
+- authoring
+difficulty: medium
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+- Uses `Artifact.upload_file()`
+- Includes `filepath`
+- Includes `name`
+- Includes `bucket_name`
+- Includes `created_by_resource_name`
+source_docs:
+- docs/tutorial/scheduling_jobs.md
+- docs/knowledge/infrastructure/artifacts.md

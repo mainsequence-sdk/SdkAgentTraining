@@ -1,0 +1,10 @@
+skill_path: maintenance/local_journal
+display_name: local-journal
+description: Use this skill to maintain the project-state files under `agent_scaffold/`
+  in a Main Sequence repository. This skill owns reconciliation of current state,
+  stable references, next actions, blockers, and historical notes after material work.
+sdk_package: mainsequence
+sdk_version: 3.17.33
+installed_bundle_package: agent_scaffold
+installed_skill_file: /Users/jose/code/MainSequenceClientSide/mainsequence-sdk/agent_scaffold/skills/maintenance/local_journal/SKILL.md
+copied_skill_file: /Users/jose/code/MainSequenceClientSide/SdkAgentTraining/cases/sdk/3.17.33/skills/maintenance/local_journal/source/SKILL.md

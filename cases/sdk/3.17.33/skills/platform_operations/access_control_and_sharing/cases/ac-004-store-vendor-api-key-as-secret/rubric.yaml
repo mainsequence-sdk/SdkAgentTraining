@@ -1,0 +1,16 @@
+passing_score: 0.9
+criteria:
+  - id: resource-choice
+    weight: 0.45
+    description: Chooses `Secret`.
+  - id: create-command
+    weight: 0.3
+    description: Uses `mainsequence secrets create POLYGON_API_KEY your-secret-value`.
+  - id: rejection-of-constant
+    weight: 0.15
+    description: States that `Constant` is wrong for a sensitive credential.
+  - id: explanation
+    weight: 0.1
+    description: Explains the security boundary clearly.
+notes:
+  - Any answer that recommends `Constant` should fail.

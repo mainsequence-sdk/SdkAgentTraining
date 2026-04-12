@@ -1,0 +1,22 @@
+id: ac-004-store-vendor-api-key-as-secret
+title: Store a vendor API key as a Secret instead of a Constant
+skill_path: platform_operations/access_control_and_sharing
+sdk_version: 3.17.33
+tags:
+  - secret
+  - constant
+  - credentials
+  - runtime-config
+  - security
+difficulty: easy
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+  - Chooses `Secret` for a sensitive credential
+  - Rejects `Constant` for the API key
+  - Gives the correct CLI creation surface for the selected resource
+source_docs:
+  - docs/tutorial/role_based_access_control.md
+  - docs/knowledge/infrastructure/constants_and_secrets.md

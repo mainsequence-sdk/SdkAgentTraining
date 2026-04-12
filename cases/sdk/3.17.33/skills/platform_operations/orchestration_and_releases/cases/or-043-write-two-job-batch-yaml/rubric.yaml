@@ -1,0 +1,16 @@
+passing_score: 0.85
+criteria:
+- id: shape
+  weight: 0.35
+  description: Uses the correct command or file shape.
+- id: required-fields
+  weight: 0.3
+  description: Includes the required arguments or fields from the docs.
+- id: sdk-grounding
+  weight: 0.2
+  description: Matches documented SDK/CLI behavior.
+- id: explanation
+  weight: 0.15
+  description: Explains why the structure is correct.
+notes:
+- This case tests exact operational authoring rather than free-form explanation.

@@ -1,0 +1,9 @@
+jobs:
+  - name: "Vendor Prices - Weekday 06:00 UTC"
+    execution_path: "scripts/vendor_prices_launcher.py"
+    task_schedule:
+      type: "crontab"
+      expression: "0 6 * * 1-5"
+    related_image_id: 77
+    cpu_request: "0.25"
+    memory_request: "0.5"

@@ -1,0 +1,23 @@
+id: ac-003-grant-team-edit-access-to-project
+title: Grant team edit access to a project and verify it
+skill_path: platform_operations/access_control_and_sharing
+sdk_version: 3.17.33
+tags:
+  - cli
+  - project
+  - team-sharing
+  - edit
+  - verification
+difficulty: easy
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+  - Uses the exact team edit grant command on the project surface
+  - Separately verifies edit access after the change
+  - Does not substitute a direct user grant for a team grant
+source_docs:
+  - docs/cli/index.md
+  - docs/knowledge/infrastructure/users_and_access.md
+  - mainsequence/cli/cli.py

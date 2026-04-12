@@ -1,0 +1,12 @@
+skill_path: platform_operations/orchestration_and_releases
+display_name: mainsequence-orchestration-and-releases
+description: Use this skill when the task is about operational execution in a Main
+  Sequence project. This skill owns jobs, schedules, batch scheduling files, project
+  images, run inspection, project resources, releases, and Artifacts as operational
+  inputs. It does not own DataNode producer design, SimpleTable schema design, API
+  route contracts, or RBAC policy.
+sdk_package: mainsequence
+sdk_version: 3.17.33
+installed_bundle_package: agent_scaffold
+installed_skill_file: /Users/jose/code/MainSequenceClientSide/mainsequence-sdk/agent_scaffold/skills/platform_operations/orchestration_and_releases/SKILL.md
+copied_skill_file: /Users/jose/code/MainSequenceClientSide/SdkAgentTraining/cases/sdk/3.17.33/skills/platform_operations/orchestration_and_releases/source/SKILL.md

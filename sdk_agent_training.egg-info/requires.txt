@@ -1,0 +1,6 @@
+mainsequence
+pyyaml
+
+[dev]
+pytest>=8.3
+ruff>=0.6

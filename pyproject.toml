@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sdk-agent-training"
+version = "0.1.0"
+description = "Training and evaluation corpus for mainsequence-sdk agent_scaffold skills"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "mainsequence",
+  "pyyaml",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3",
+  "ruff>=0.6",
+]
+
+[tool.setuptools]
+py-modules = []
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

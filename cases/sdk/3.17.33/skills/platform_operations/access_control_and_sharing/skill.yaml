@@ -1,0 +1,13 @@
+skill_path: platform_operations/access_control_and_sharing
+display_name: mainsequence-access-control-and-sharing
+description: Use this skill when the task is about RBAC, resource sharing, or access
+  verification in a Main Sequence project. This skill owns organization and team access
+  concepts, view and edit semantics, choosing the correct shareable resource boundary,
+  and access checks across projects, DataNodeStorage, constants, secrets, buckets,
+  artifacts, and releases. It does not own job scheduling, DataNode producer logic,
+  or API route design.
+sdk_package: mainsequence
+sdk_version: 3.17.33
+installed_bundle_package: agent_scaffold
+installed_skill_file: /Users/jose/code/MainSequenceClientSide/mainsequence-sdk/agent_scaffold/skills/platform_operations/access_control_and_sharing/SKILL.md
+copied_skill_file: /Users/jose/code/MainSequenceClientSide/SdkAgentTraining/cases/sdk/3.17.33/skills/platform_operations/access_control_and_sharing/source/SKILL.md

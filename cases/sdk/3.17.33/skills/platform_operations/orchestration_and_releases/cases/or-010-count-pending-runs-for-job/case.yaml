@@ -1,0 +1,24 @@
+id: or-010-count-pending-runs-for-job
+title: Count pending runs for a specific job
+skill_path: platform_operations/orchestration_and_releases
+sdk_version: 3.17.33
+tags:
+- cli
+- jobs
+- runs
+- pending
+- counting
+- json
+difficulty: medium
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+- Uses jobs runs list 91
+- Uses --json
+- Filters for PENDING
+- Counts filtered runs
+source_docs:
+- docs/tutorial/scheduling_jobs.md
+- docs/knowledge/infrastructure/scheduling_jobs.md

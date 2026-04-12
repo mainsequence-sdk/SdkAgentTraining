@@ -1,0 +1,22 @@
+id: or-007-count-fastapi-resources
+title: Count FastAPI project resources
+skill_path: platform_operations/orchestration_and_releases
+sdk_version: 3.17.33
+tags:
+- cli
+- resources
+- fastapi
+- counting
+- json
+difficulty: easy
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+- Uses project_resource list
+- Filters resource_type=fastapi
+- Counts structured output
+source_docs:
+- docs/cli/index.md
+- docs/tutorial/create_your_first_api.md

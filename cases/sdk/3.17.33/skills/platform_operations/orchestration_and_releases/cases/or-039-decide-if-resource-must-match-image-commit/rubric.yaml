@@ -1,0 +1,16 @@
+passing_score: 0.85
+criteria:
+- id: decision
+  weight: 0.4
+  description: Makes the correct operational decision.
+- id: sdk-grounding
+  weight: 0.25
+  description: References the right documented file, command, or platform object.
+- id: safety
+  weight: 0.2
+  description: Avoids unsafe or undocumented operational guidance.
+- id: explanation
+  weight: 0.15
+  description: Explains why the decision is correct.
+notes:
+- This case tests documented operational decision-making, not live platform execution.
