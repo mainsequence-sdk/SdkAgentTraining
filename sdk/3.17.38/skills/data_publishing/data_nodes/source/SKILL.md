@@ -109,7 +109,21 @@ The following are contract-level decisions:
 
 Do not change them casually.
 
-### 2. Keep meaning separate from scope
+### 2. Constructor and config contract are not optional
+
+For new or refactored nodes:
+
+- the node must subclass `DataNode`
+- the constructor must call `super().__init__(config=...)`
+- the `config` object must be a `BaseConfiguration` / `DataNodeConfiguration` subclass
+
+Do not use removed hashing patterns such as:
+
+- `_ARGS_IGNORE_IN_STORAGE_HASH`
+- `init_meta`
+- `ignore_from_storage_hash`
+
+### 3. Keep meaning separate from scope
 
 - dataset meaning belongs in table identity
 - updater scope belongs in updater identity
@@ -117,7 +131,13 @@ Do not change them casually.
 
 Do not mix these.
 
-### 3. `hash_namespace` is isolation only
+Use current Pydantic field metadata rules:
+
+- updater-scope-only fields should use `json_schema_extra={"update_only": True}`
+- descriptive runtime-only fields should use `json_schema_extra={"runtime_only": True}`
+- no field may be both `update_only` and `runtime_only`
+
+### 4. `hash_namespace` is isolation only
 
 Use `hash_namespace(...)` or `test_node=True` for:
 
@@ -127,32 +147,64 @@ Use `hash_namespace(...)` or `test_node=True` for:
 
 Do not use namespace to encode business meaning.
 
-### 4. `update()` should be incremental by default
+### 5. `update()` must return the right thing
+
+On the default DataNode path:
+
+- `update()` must return a `pd.DataFrame`
+- returning `None` is not valid
+- if there is no new data, return an empty `pd.DataFrame()`
+
+### 6. `update()` should be incremental by default
 
 Use `UpdateStatistics`.
 
 Do not fetch or return full history every run unless there is a documented reason.
 
-### 5. Dependencies must be deterministic
+### 7. Dependencies must be deterministic
 
 Dependencies belong in constructor setup and `dependencies()`.
 
 Do not construct dependency graphs dynamically inside `update()`.
 
-### 6. Asset-indexed nodes must behave like asset-indexed nodes
+### 8. DataFrame validation rules are hard constraints
+
+The output DataFrame must satisfy the active SDK validation path:
+
+- the first index level must be `datetime64[ns, UTC]`
+- for non-DuckDB storage, output column names must be lowercase strings
+- output column names must be `63` characters or fewer
+- datetime payload columns are forbidden
+- duplicate index keys are not allowed
+
+For duplicate keys:
+
+- single-index tables must not emit duplicate `time_index` rows
+- MultiIndex tables must not emit duplicate `(time_index, unique_identifier)` rows
+
+Do not rely on `inf` or `-inf` surviving persistence.
+
+### 9. Asset-indexed nodes must behave like asset-indexed nodes
 
 If the node emits `(time_index, unique_identifier)`:
 
+- the first index level must be `time_index`
 - `unique_identifier` should represent an Asset identity
+- `unique_identifier` is the current standard; do not use `asset_symbol` as the index-name target for new node construction
 - `get_asset_list()` must reflect the effective updater asset scope
 - missing assets should be resolved or registered when required by the workflow
 
-### 7. Metadata is not optional for production-quality nodes
+### 10. Metadata is not optional for production-quality nodes
 
 When the node is not a throwaway example, provide:
 
 - table metadata
 - column metadata or record definitions
+
+When using record definitions or column metadata:
+
+- `column_name` and `dtype` should match the actual published output
+- descriptions should be useful for search and discovery
 
 ## Review Rules
 
@@ -161,9 +213,14 @@ When reviewing an existing DataNode, look for:
 - identifier collisions
 - accidental schema breaks
 - wrong meaning/scope/runtime-only split
+- missing `super().__init__(config=...)`
+- removed legacy hashing patterns
 - misuse of `hash_namespace`
 - non-incremental `update()` behavior
+- `update()` returning `None` or non-DataFrame payloads
 - hidden dependency creation inside `update()`
+- invalid DataFrame validation shape
+- duplicate index keys
 - invalid asset-indexed output shape
 - missing metadata on a production node
 
@@ -174,13 +231,18 @@ Do not claim success until you have checked:
 - the relevant docs were read first
 - the identifier choice is intentional
 - config fields are classified correctly
+- the constructor uses `super().__init__(config=...)`
 - `dependencies()` is deterministic
 - `update()` is incremental
+- `update()` returns a DataFrame, not `None`
 - the DataFrame shape is valid
+- the DataFrame uses valid column names
+- no duplicate index keys are emitted
 - the first validation run is namespaced
 
 For asset-indexed nodes, also check:
 
+- the index shape is `(time_index, unique_identifier)`
 - `get_asset_list()` is correct
 - no duplicate `(time_index, unique_identifier)` rows are emitted
 - assets exist or are registered idempotently when needed
