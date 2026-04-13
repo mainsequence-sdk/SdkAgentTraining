@@ -1,20 +1,33 @@
 # Training Conventions
 
-## Core principle
+## Core Principle
 
-Keep the reusable corpus separate from generated results.
+Keep authored cases separate from copied SDK source.
 
-- `cases/general/` is optional and only for prompts that are not tied to one skill
-- `cases/skills/` is for general skill cases that are not pinned to one SDK version
-- `cases/sdk/<version>/` is the versioned seed copied from the installed library
-- `runs/` stores outputs from a specific agent, model, and SDK version
+- `cases/` holds authored case sets
+- `sdk/` holds copied library snapshots
+- `sdk/<version>/case-map.yaml` declares which case set a skill uses for that SDK version
+- `runs/` holds generated outputs
 
-## Case layout
+## Case-Set Layout
+
+Each case-set version lives under:
+
+```text
+cases/<case-set-version>/
+├── manifest.yaml
+└── skills/
+    └── <skill-path>/
+        ├── README.md
+        ├── skill.yaml
+        └── cases/
+            └── <case-id>/
+```
 
 Each concrete case should live in its own folder:
 
 ```text
-cases/sdk/<version>/skills/<skill-path>/cases/<case-id>/
+cases/<case-set-version>/skills/<skill-path>/cases/<case-id>/
 ├── case.yaml
 ├── prompt.md
 ├── expected/
@@ -28,39 +41,55 @@ Recommended `case.yaml` fields:
 - `id`
 - `title`
 - `skill_path`
+- `case_set_version`
+- `authored_against_sdk_version`
 - `tags`
 - `difficulty`
 - `requires`
 - `success`
 
-Recommended `rubric.yaml` fields:
+## SDK Snapshot Layout
 
-- `passing_score`
-- `criteria`
-- `notes`
+Each installed SDK snapshot lives under:
 
-## Skill-specific cases
+```text
+sdk/<sdk-version>/
+├── manifest.json
+├── case-map.yaml
+├── agent_scaffold/AGENTS.md
+└── skills/<skill-path>/source/SKILL.md
+```
 
-Use `cases/skills/<skill-path>/` for reusable skill cases that should not live under a single SDK version.
+The snapshot should contain copied source and mapping metadata only.
 
-Use `cases/sdk/<version>/skills/` for version-pinned skill cases and copied source material.
+Do not store authored cases under `sdk/<sdk-version>/`.
 
-Use the exact SDK skill path under `cases/sdk/<version>/skills/`, for example:
+## Case Mapping
 
-- `cases/sdk/3.17.33/skills/project_builder/...`
-- `cases/sdk/3.17.33/skills/command_center/workspace_builder/...`
+Compatibility is declared in:
 
-The population script creates, per installed SDK version:
+```text
+sdk/<sdk-version>/case-map.yaml
+```
 
-- `manifest.json`
-- `agent_scaffold/AGENTS.md`
-- `skills/<skill>/skill.yaml`
-- `skills/<skill>/source/SKILL.md`
-- `skills/<skill>/cases/`
+Recommended shape:
 
-That gives each installed skill a versioned home before prompts are added.
+```yaml
+sdk_version: 3.17.38
+default_case_set: v1
+skills:
+  platform_operations/orchestration_and_releases:
+    case_set: v1
+  data_publishing/simple_tables:
+    case_set: v1
+```
 
-## Run layout
+This allows:
+
+- one authored case bank to serve multiple SDK versions
+- skill-by-skill remapping when a newer SDK needs a newer case-set version
+
+## Run Layout
 
 Each execution goes under:
 

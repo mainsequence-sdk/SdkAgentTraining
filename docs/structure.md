@@ -1,52 +1,69 @@
 # Folder Structure
 
-This repository is organized around one question:
+This repository is organized around two independent version axes:
 
-How effective are the installed `agent_scaffold` skills for a specific `mainsequence` SDK version?
+- case-set version
+- SDK version
 
-## Top level
+That separation is intentional.
+
+## Top Level
 
 - `cases/`
-  Training and evaluation inputs.
+  Authored prompts, rubrics, and expected outputs.
+- `sdk/`
+  Copied snapshots of installed SDK skill source.
 - `docs/`
-  Documentation for how the repository is organized and used.
+  Repository documentation.
 - `reports/`
-  Derived summaries, comparisons, and leaderboards.
+  Derived summaries and leaderboards.
 - `runs/`
   Outputs from actual agent/model executions.
 - `scripts/`
-  Local utilities that populate versioned cases and create run folders.
+  Local utilities for populating SDK snapshots and running evaluations.
 
 ## `cases/`
 
 - `cases/general/`
-  Optional bucket for prompts that are not owned by one skill.
-  Example use: testing routing across multiple skills.
-  It is valid for this folder to be empty.
-- `cases/skills/`
-  General skill cases that are not bound to a specific installed SDK version.
-  Use this for reusable prompts for a skill when you do not want to duplicate them under each version yet.
-- `cases/sdk/`
-  The real corpus root for this repository.
-  Everything here is grouped by installed SDK version.
+  Optional bucket for prompts not owned by one skill.
+- `cases/v1/`
+  First authored case-set version.
 
-## `cases/sdk/<sdk-version>/`
+## `cases/<case-set-version>/`
+
+- `manifest.yaml`
+  Metadata for the authored case-set version.
+- `skills/`
+  One folder per skill path with reusable authored cases.
+
+## `cases/<case-set-version>/skills/<skill-path>/`
+
+- `README.md`
+  Human explanation for the authored case bank for that skill.
+- `skill.yaml`
+  Case-set metadata for that skill.
+- `cases/`
+  The actual reusable authored cases.
+
+## `sdk/<sdk-version>/`
 
 - `manifest.json`
-  Inventory of the installed bundle copied for this SDK version.
+  Inventory of the copied installed SDK bundle.
+- `case-map.yaml`
+  Declares which case-set version each skill should use for this SDK version.
 - `agent_scaffold/AGENTS.md`
-  Top-level scaffold instructions copied from the installed package.
+  Copied top-level scaffold instructions from the installed package.
 - `skills/`
-  One folder per installed skill path.
+  One folder per copied installed skill path.
 
-## `cases/sdk/<sdk-version>/skills/<skill-path>/`
+## `sdk/<sdk-version>/skills/<skill-path>/`
 
-- `source/SKILL.md`
-  Exact skill instructions copied from the installed package.
+- `README.md`
+  Human explanation for the SDK snapshot folder.
 - `skill.yaml`
-  Metadata about the skill for that version.
-- `cases/`
-  Prompt cases used to evaluate that specific skill.
+  Snapshot metadata for that copied skill.
+- `source/SKILL.md`
+  Exact copied skill instructions from the installed package.
 
 ## `runs/sdk/<sdk-version>/<agent>/<model>/<timestamp>/`
 
@@ -55,16 +72,16 @@ How effective are the installed `agent_scaffold` skills for a specific `mainsequ
 - `skills/`
   Skill-specific outputs for that run.
 - `evaluations/`
-  Scores or rubric results.
+  Scores and rubric results.
 - `logs/`
-  Execution notes or raw logs.
+  Raw request/response and execution logs.
 
-## Why `general`, `skills`, and versioned skill folders all exist
+## Why This Structure Is Better
 
-- `cases/general/` is optional and cross-cutting.
-- `cases/skills/` is general but still skill-owned.
-- `cases/sdk/<version>/skills/...` is the main evaluation surface.
+With this structure:
 
-If you do not want cross-cutting prompt sets, leave `cases/general/` empty.
-If you do not want reusable non-version skill cases, leave `cases/skills/` empty.
-The versioned skill folders remain the installed-SDK-specific source of truth.
+- adding `sdk/3.17.39/` does not force copying `cases/v1/`
+- a skill can keep using `v1` for several SDK versions
+- only the mapping file changes when compatibility changes but the authored case bank does not
+
+That keeps the repo smaller and makes SDK drift explicit instead of hidden in duplicate folders.

@@ -275,8 +275,8 @@ wheels = [
 
 [[package]]
 name = "mainsequence"
-version = "3.17.33"
-source = { editable = "../mainsequence-sdk" }
+version = "3.17.38"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cachetools" },
     { name = "cloudpickle" },
@@ -296,58 +296,9 @@ dependencies = [
     { name = "typer" },
     { name = "urllib3" },
 ]
-
-[package.metadata]
-requires-dist = [
-    { name = "cachetools" },
-    { name = "cloudpickle" },
-    { name = "concurrent-log-handler" },
-    { name = "docstring-parser", marker = "extra == 'virtualfundbuilder'" },
-    { name = "duckdb", marker = "extra == 'local-data'" },
-    { name = "joblib", marker = "extra == 'virtualfundbuilder'" },
-    { name = "matplotlib", marker = "extra == 'instruments'" },
-    { name = "numpy" },
-    { name = "opentelemetry-api" },
-    { name = "opentelemetry-exporter-otlp" },
-    { name = "opentelemetry-sdk" },
-    { name = "pandas" },
-    { name = "pandas-market-calendars", marker = "extra == 'virtualfundbuilder'" },
-    { name = "psutil" },
-    { name = "pyarrow", marker = "extra == 'local-data'" },
-    { name = "pydantic" },
-    { name = "pytz" },
-    { name = "pyyaml" },
-    { name = "quantlib", marker = "extra == 'instruments'" },
-    { name = "requests" },
-    { name = "scikit-learn", marker = "extra == 'virtualfundbuilder'" },
-    { name = "streamlit", marker = "extra == 'dashboards'" },
-    { name = "streamlit-aggrid", marker = "extra == 'dashboards'" },
-    { name = "structlog" },
-    { name = "tqdm" },
-    { name = "typer" },
-    { name = "urllib3" },
-]
-provides-extras = ["local-data", "virtualfundbuilder", "instruments", "dashboards"]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "black", specifier = ">=25.9.0" },
-    { name = "ipython" },
-    { name = "mkdocs" },
-    { name = "mkdocs-autorefs" },
-    { name = "mkdocs-gen-files" },
-    { name = "mkdocs-literate-nav" },
-    { name = "mkdocs-material" },
-    { name = "mkdocs-mermaid2-plugin" },
-    { name = "mkdocstrings", extras = ["python"] },
-    { name = "pipdeptree" },
-    { name = "pre-commit" },
-    { name = "pymdown-extensions" },
-    { name = "pytest", specifier = ">=8.4.2" },
-    { name = "pytest-freezegun" },
-    { name = "ruff", specifier = ">=0.14.0" },
-    { name = "streamlit" },
-    { name = "twine" },
+sdist = { url = "https://files.pythonhosted.org/packages/b4/1f/42669e4fd30279d7b05138602efc2afb29932c0423d8b4c35a7c9a979417/mainsequence-3.17.38.tar.gz", hash = "sha256:dca07c35b81d2951e371a5315cf6967cf2905809669fb9fbb5eb8ec9b5b0a3c8", size = 1112007, upload-time = "2026-04-13T11:35:06.804Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/10/c5/14e10ff23063e476db5be75b526ddcd06f9913b999475c80e48ed7b1e3df/mainsequence-3.17.38-py3-none-any.whl", hash = "sha256:793ac1ea0a078259046da52facb5aa458b0a15994a0dfea9bdb8f7ed1f0d9d87", size = 1122358, upload-time = "2026-04-13T11:35:05.017Z" },
 ]
 
 [[package]]
@@ -998,7 +949,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "mainsequence", editable = "../mainsequence-sdk" },
+    { name = "mainsequence", specifier = "==3.17.38" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.3" },
     { name = "pyyaml" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.6" },

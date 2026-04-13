@@ -68,12 +68,44 @@ def read_sdk_version() -> str:
     return importlib.metadata.version("mainsequence")
 
 
-def find_case_by_id(case_id: str) -> Path:
+def locate_sdk_root(sdk_version: str) -> Path:
+    sdk_root = REPO_ROOT / "sdk" / sdk_version
+    if not sdk_root.exists():
+        raise SystemExit(f"SDK snapshot not found for installed version {sdk_version}: {sdk_root}")
+    return sdk_root
+
+
+def load_case_map(sdk_root: Path) -> dict:
+    path = sdk_root / "case-map.yaml"
+    if not path.exists():
+        raise SystemExit(f"Case map not found for SDK snapshot: {path}")
+    return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+
+
+def case_sets_for_sdk(sdk_root: Path) -> list[str]:
+    case_map = load_case_map(sdk_root)
+    case_sets = set()
+    default_case_set = case_map.get("default_case_set")
+    if default_case_set:
+        case_sets.add(str(default_case_set))
+    for entry in (case_map.get("skills", {}) or {}).values():
+        if isinstance(entry, str):
+            case_sets.add(entry)
+        elif isinstance(entry, dict) and entry.get("case_set"):
+            case_sets.add(str(entry["case_set"]))
+    return sorted(case_sets)
+
+
+def find_case_by_id(case_id: str, sdk_root: Path) -> Path:
     matches = []
-    for case_yaml in REPO_ROOT.glob("cases/**/case.yaml"):
-        payload = yaml.safe_load(case_yaml.read_text(encoding="utf-8")) or {}
-        if payload.get("id") == case_id:
-            matches.append(case_yaml.parent)
+    for case_set in case_sets_for_sdk(sdk_root):
+        case_root = REPO_ROOT / "cases" / case_set / "skills"
+        if not case_root.exists():
+            continue
+        for case_yaml in case_root.glob("**/case.yaml"):
+            payload = yaml.safe_load(case_yaml.read_text(encoding="utf-8")) or {}
+            if payload.get("id") == case_id:
+                matches.append(case_yaml.parent)
     if not matches:
         raise SystemExit(f"Case id not found: {case_id}")
     if len(matches) > 1:
@@ -81,32 +113,37 @@ def find_case_by_id(case_id: str) -> Path:
     return matches[0]
 
 
-def resolve_case(case_arg: str) -> Path:
+def resolve_case(case_arg: str, sdk_root: Path) -> Path:
     candidate = Path(case_arg)
     if candidate.exists():
         return candidate.resolve()
-    return find_case_by_id(case_arg)
+    return find_case_by_id(case_arg, sdk_root)
 
 
-def locate_sdk_root_for_case(case_path: Path) -> tuple[str, Path]:
+def infer_skill_path_from_case(case_path: Path) -> str:
+    case_payload = yaml.safe_load((case_path / "case.yaml").read_text(encoding="utf-8")) or {}
+    if case_payload.get("skill_path"):
+        return str(case_payload["skill_path"])
+
     current = case_path.resolve()
     for parent in [current] + list(current.parents):
-        if parent.parent.name == "sdk" and (parent / "manifest.json").exists():
-            return parent.name, parent
-    raise SystemExit(f"Could not determine SDK version root for case: {case_path}")
-
-
-def find_skill_root(case_path: Path, sdk_root: Path) -> Path:
-    current = case_path.resolve()
-    skills_root = sdk_root / "skills"
-    for parent in [current] + list(current.parents):
+        if parent.name != "cases":
+            continue
         try:
-            parent.relative_to(skills_root)
+            relative = parent.parent.relative_to(REPO_ROOT / "cases")
         except ValueError:
             continue
-        if (parent / "skill.yaml").exists():
-            return parent
-    raise SystemExit(f"Could not determine skill root for case: {case_path}")
+        parts = relative.parts
+        if len(parts) >= 3 and parts[1] == "skills":
+            return "/".join(parts[2:])
+    raise SystemExit(f"Could not determine skill path for case: {case_path}")
+
+
+def find_skill_root(skill_path: str, sdk_root: Path) -> Path:
+    skill_root = sdk_root / "skills" / skill_path
+    if not (skill_root / "source" / "SKILL.md").exists():
+        raise SystemExit(f"Could not find SDK skill snapshot for {skill_path}: {skill_root}")
+    return skill_root
 
 
 def build_prompt_bundle(case_path: Path, sdk_root: Path, skill_root: Path) -> tuple[str, str]:
@@ -198,15 +235,13 @@ def save_case_outputs(
     *,
     run_root: Path,
     case_path: Path,
-    skill_root: Path,
-    sdk_root: Path,
+    skill_path: str,
     prompt_bundle: tuple[str, str],
     chat_payload: dict,
 ) -> tuple[Path, Path]:
     case_payload = yaml.safe_load((case_path / "case.yaml").read_text(encoding="utf-8")) or {}
     case_id = case_payload["id"]
-    skill_path = skill_root.relative_to(sdk_root / "skills")
-    output_root = run_root / "skills" / skill_path / case_id
+    output_root = run_root / "skills" / Path(skill_path) / case_id
     output_root.mkdir(parents=True, exist_ok=True)
 
     system_prompt, user_prompt = prompt_bundle
@@ -217,7 +252,7 @@ def save_case_outputs(
     response_path = output_root / "response.md"
     response_path.write_text(response_text.strip() + "\n", encoding="utf-8")
 
-    log_root = run_root / "logs" / skill_path / case_id
+    log_root = run_root / "logs" / Path(skill_path) / case_id
     log_root.mkdir(parents=True, exist_ok=True)
     request_log = log_root / "ollama_request.json"
     response_log = log_root / "ollama_response.json"
@@ -264,9 +299,11 @@ def evaluate_response(
 
 def main() -> int:
     args = build_parser().parse_args()
-    case_path = resolve_case(args.case)
-    sdk_version, sdk_root = locate_sdk_root_for_case(case_path)
-    skill_root = find_skill_root(case_path, sdk_root)
+    sdk_version = read_sdk_version()
+    sdk_root = locate_sdk_root(sdk_version)
+    case_path = resolve_case(args.case, sdk_root)
+    skill_path = infer_skill_path_from_case(case_path)
+    skill_root = find_skill_root(skill_path, sdk_root)
     system_prompt, user_prompt = build_prompt_bundle(case_path, sdk_root, skill_root)
 
     run_root = create_run_root(sdk_version, args.agent, args.model)
@@ -283,8 +320,7 @@ def main() -> int:
     response_path, output_root = save_case_outputs(
         run_root=run_root,
         case_path=case_path,
-        skill_root=skill_root,
-        sdk_root=sdk_root,
+        skill_path=skill_path,
         prompt_bundle=(system_prompt, user_prompt),
         chat_payload=chat_payload,
     )

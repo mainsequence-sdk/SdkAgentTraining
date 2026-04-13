@@ -30,12 +30,14 @@ Another model:
 
 The runner will:
 
-1. load the versioned case
-2. load `AGENTS.md` and the skill `SKILL.md`
-3. send the prompt to Ollama
-4. create a run folder under `runs/sdk/<version>/ollama/<model>/<timestamp>/`
-5. save the raw response
-6. run the automatic evaluator for the case
+1. read the installed SDK version
+2. resolve the case id through `sdk/<version>/case-map.yaml`
+3. load the authored case from the mapped case-set version
+4. load `AGENTS.md` and the copied skill `SKILL.md` from the matching SDK snapshot
+5. send the prompt to Ollama
+6. create a run folder under `runs/sdk/<version>/ollama/<model>/<timestamp>/`
+7. save the raw response
+8. run the automatic evaluator for the case
 
 By default, the saved evaluation records:
 
@@ -57,7 +59,7 @@ You can override that when needed:
 Example:
 
 ```text
-runs/sdk/3.17.33/ollama/ms-reasoning-latest/2026-04-12T16-20-00Z/
+runs/sdk/3.17.38/ollama/ms-reasoning-latest/2026-04-12T16-20-00Z/
 ├── manifest.json
 ├── evaluations/
 │   └── or-001-recurring-artifact-job.json

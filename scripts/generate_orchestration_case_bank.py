@@ -89,7 +89,8 @@ Weak answers should be rejected if they:
         "id": case_id,
         "title": title,
         "skill_path": SKILL_PATH,
-        "sdk_version": sdk_version(),
+        "case_set_version": "v1",
+        "authored_against_sdk_version": sdk_version(),
         "tags": tags,
         "difficulty": difficulty,
         "requires": {"network": False, "auth": False, "writes_code": False},
@@ -162,7 +163,8 @@ Keep the answer grounded in documented Main Sequence behavior."""
         "id": case_id,
         "title": title,
         "skill_path": SKILL_PATH,
-        "sdk_version": sdk_version(),
+        "case_set_version": "v1",
+        "authored_against_sdk_version": sdk_version(),
         "tags": tags,
         "difficulty": difficulty,
         "requires": {"network": False, "auth": False, "writes_code": False},
@@ -240,7 +242,8 @@ It should also make these points explicit:
         "id": case_id,
         "title": title,
         "skill_path": SKILL_PATH,
-        "sdk_version": sdk_version(),
+        "case_set_version": "v1",
+        "authored_against_sdk_version": sdk_version(),
         "tags": tags,
         "difficulty": difficulty,
         "requires": {"network": False, "auth": False, "writes_code": False},
@@ -263,8 +266,7 @@ def target_root() -> Path:
     return (
         REPO_ROOT
         / "cases"
-        / "sdk"
-        / sdk_version()
+        / "v1"
         / "skills"
         / "platform_operations"
         / "orchestration_and_releases"

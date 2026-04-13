@@ -1,4 +1,4 @@
-mainsequence
+mainsequence==3.17.38
 pyyaml
 
 [dev]

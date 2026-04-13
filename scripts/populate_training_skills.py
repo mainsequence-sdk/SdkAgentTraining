@@ -58,6 +58,16 @@ def write_yaml(path: Path, payload: dict) -> None:
     path.write_text(yaml.safe_dump(payload, sort_keys=False, allow_unicode=True), encoding="utf-8")
 
 
+def load_case_map(path: Path, sdk_version: str) -> dict:
+    if path.exists():
+        return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    return {
+        "sdk_version": sdk_version,
+        "default_case_set": "v1",
+        "skills": {},
+    }
+
+
 def main() -> int:
     sdk_version = installed_sdk_version()
     bundle_dir = installed_bundle_dir()
@@ -65,7 +75,7 @@ def main() -> int:
     if not skills_root.exists():
         raise SystemExit(f"Installed bundle skills directory was not found: {skills_root}")
 
-    version_root = REPO_ROOT / "cases" / "sdk" / sdk_version
+    version_root = REPO_ROOT / "sdk" / sdk_version
     skills_output_root = version_root / "skills"
     version_root.mkdir(parents=True, exist_ok=True)
     skills_output_root.mkdir(parents=True, exist_ok=True)
@@ -82,12 +92,9 @@ def main() -> int:
         skill_meta = parse_frontmatter(skill_file)
 
         skill_root = skills_output_root / skill_path
-        prompt_cases_root = skill_root / "cases"
         source_root = skill_root / "source"
-        prompt_cases_root.mkdir(parents=True, exist_ok=True)
         source_root.mkdir(parents=True, exist_ok=True)
 
-        (prompt_cases_root / ".gitkeep").write_text("", encoding="utf-8")
         snapshot_skill_file = source_root / "SKILL.md"
         shutil.copy2(skill_file, snapshot_skill_file)
 
@@ -103,14 +110,6 @@ def main() -> int:
         }
         write_yaml(skill_root / "skill.yaml", skill_record)
 
-        readme = (
-            f"# {skill_path}\n\n"
-            f"SDK version: `{sdk_version}`\n\n"
-            f"Installed skill source: `{skill_file}`\n\n"
-            f"Copied bundle file: `{snapshot_skill_file}`\n\n"
-            "Add version-specific prompt cases under `cases/`.\n"
-        )
-        (skill_root / "README.md").write_text(readme, encoding="utf-8")
         catalog.append(skill_record)
 
     manifest = {
@@ -124,6 +123,28 @@ def main() -> int:
     (version_root / "manifest.json").write_text(
         json.dumps(manifest, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
+    )
+
+    case_map_path = version_root / "case-map.yaml"
+    case_map = load_case_map(case_map_path, sdk_version)
+    existing_skills = case_map.get("skills", {}) or {}
+    merged_skills: dict[str, dict[str, str]] = {}
+    default_case_set = case_map.get("default_case_set") or "v1"
+    for skill_record in catalog:
+        skill_path = str(skill_record["skill_path"])
+        existing_entry = existing_skills.get(skill_path, {})
+        if isinstance(existing_entry, str):
+            existing_entry = {"case_set": existing_entry}
+        merged_skills[skill_path] = {
+            "case_set": existing_entry.get("case_set") or default_case_set,
+        }
+    write_yaml(
+        case_map_path,
+        {
+            "sdk_version": sdk_version,
+            "default_case_set": default_case_set,
+            "skills": merged_skills,
+        },
     )
 
     print(f"Populated {len(catalog)} skills for installed SDK {sdk_version}")
