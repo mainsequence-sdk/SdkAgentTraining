@@ -1,0 +1,23 @@
+id: or-005-count-ready-project-images
+title: Count ready project images in the current project
+skill_path: platform_operations/orchestration_and_releases
+case_set_version: v1
+authored_against_sdk_version: 3.17.33
+tags:
+- cli
+- images
+- counting
+- json
+difficulty: medium
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+- Selects the project images list command
+- Uses `--json`
+- Filters for ready images
+- Counts the filtered results
+source_docs:
+- docs/cli/index.md
+- docs/tutorial/scheduling_jobs.md

@@ -1,0 +1,8 @@
+case_set_version: v1
+skill_path: markets_platform/instruments_and_pricing
+display_name: mainsequence-instruments-and-pricing
+description: Use this skill when the task is about instrument valuation in a Main
+  Sequence project. This skill owns market-data registration for pricing inputs, pricing
+  details on assets, the runtime path from stored curves and fixings into QuantLib
+  objects, and valuation expectations for bonds, swaps, and positions. It does not
+  own generic asset identity, portfolio construction, or DataNode producer design.

@@ -1,0 +1,22 @@
+id: or-029-schedule-batch-jobs-command
+title: Author the batch scheduling command
+skill_path: platform_operations/orchestration_and_releases
+case_set_version: v1
+authored_against_sdk_version: 3.17.33
+tags:
+- cli
+- jobs
+- batch
+- authoring
+difficulty: medium
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+- Uses `schedule_batch_jobs`
+- Targets `scheduled_jobs.yaml`
+- Uses the batch scheduling surface rather than direct job creation
+source_docs:
+- docs/tutorial/scheduling_jobs.md
+- docs/knowledge/infrastructure/scheduling_jobs.md

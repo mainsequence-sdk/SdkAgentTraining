@@ -1,0 +1,24 @@
+id: or-012-count-images-for-specific-commit
+title: Count images for a specific repo hash
+skill_path: platform_operations/orchestration_and_releases
+case_set_version: v1
+authored_against_sdk_version: 3.17.33
+tags:
+- cli
+- images
+- filters
+- counting
+- json
+difficulty: medium
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+- Uses project images list
+- Uses project_repo_hash__in filter
+- Uses --json
+- Counts returned images
+source_docs:
+- docs/cli/index.md
+- docs/knowledge/cli.md

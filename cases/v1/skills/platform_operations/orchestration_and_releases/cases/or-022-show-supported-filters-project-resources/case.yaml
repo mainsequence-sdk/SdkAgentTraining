@@ -1,0 +1,19 @@
+id: or-022-show-supported-filters-project-resources
+title: Inspect supported filters for project resources
+skill_path: platform_operations/orchestration_and_releases
+case_set_version: v1
+authored_against_sdk_version: 3.17.33
+tags:
+- cli
+- resources
+- filters
+difficulty: easy
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+- Uses project_resource list --show-filters
+source_docs:
+- docs/cli/index.md
+- docs/knowledge/cli.md

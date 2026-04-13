@@ -1,0 +1,9 @@
+case_set_version: v1
+skill_path: application_surfaces/api_surfaces
+display_name: mainsequence-api-surfaces
+description: Use this skill when the task is about building or changing APIs in a
+  Main Sequence repository. In a Main Sequence project, project APIs should be implemented
+  as FastAPI project resources. This skill owns FastAPI structure, request and response
+  contracts, request user binding, APIDataNode and SimpleTable consumption inside
+  APIs, and exact widget-facing API response contracts. It does not own producer-side
+  DataNode or SimpleTable design, workspace payloads, or scheduling and release workflows.

@@ -1,0 +1,16 @@
+passing_score: 0.9
+criteria:
+  - id: create-command
+    weight: 0.4
+    description: Uses `mainsequence secrets create POLYGON_API_KEY your-secret-value`.
+  - id: sdk-read
+    weight: 0.35
+    description: Uses `Secret.get(name="POLYGON_API_KEY").value`.
+  - id: resource-choice
+    weight: 0.15
+    description: States that `Secret` is the correct resource for a sensitive credential.
+  - id: explanation
+    weight: 0.1
+    description: Explains the security boundary clearly.
+notes:
+  - Any answer that reads the value through `Constant` should fail.

@@ -1,0 +1,22 @@
+id: or-006-count-project-resources
+title: Count project resources at the current upstream commit
+skill_path: platform_operations/orchestration_and_releases
+case_set_version: v1
+authored_against_sdk_version: 3.17.33
+tags:
+- cli
+- resources
+- counting
+- json
+difficulty: easy
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+- Uses project_resource list
+- Uses --json
+- Counts returned resources
+source_docs:
+- docs/cli/index.md
+- docs/tutorial/create_your_first_api.md

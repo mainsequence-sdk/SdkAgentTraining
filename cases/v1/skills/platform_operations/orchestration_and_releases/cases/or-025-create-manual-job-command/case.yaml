@@ -1,0 +1,22 @@
+id: or-025-create-manual-job-command
+title: Author a manual job creation command
+skill_path: platform_operations/orchestration_and_releases
+case_set_version: v1
+authored_against_sdk_version: 3.17.33
+tags:
+- cli
+- jobs
+- manual
+- authoring
+difficulty: medium
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+- Uses `project jobs create`
+- Uses `execution-path` relative to the repository root
+- Includes `--related-image-id 77`
+source_docs:
+- docs/tutorial/scheduling_jobs.md
+- docs/knowledge/infrastructure/scheduling_jobs.md

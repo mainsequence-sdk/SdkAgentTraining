@@ -1,0 +1,8 @@
+case_set_version: v1
+skill_path: data_publishing/simple_tables
+display_name: mainsequence-simple-tables
+description: Use this skill when the task is about defining, changing, querying, or
+  reviewing Main Sequence SimpleTables and SimpleTableUpdaters. This skill owns row
+  schemas, backend-managed ids, insert versus overwrite behavior, filtering, foreign
+  keys, and validation rules. It does not own DataNode producers, API route contracts,
+  scheduling, or sharing policy.

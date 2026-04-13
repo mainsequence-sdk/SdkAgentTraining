@@ -1,0 +1,19 @@
+passing_score: 0.9
+criteria:
+  - id: command-surface
+    weight: 0.35
+    description: Uses `mainsequence project jobs runs list 91`.
+  - id: structured-output
+    weight: 0.2
+    description: Uses `--json` or another explicitly structured output path.
+  - id: filter-logic
+    weight: 0.25
+    description: Filters the returned runs to `status == RUNNING`.
+  - id: count-logic
+    weight: 0.1
+    description: Counts the filtered runs programmatically.
+  - id: explanation
+    weight: 0.1
+    description: Explains why the command answers the question.
+notes:
+  - This case tests both command selection and output transformation.

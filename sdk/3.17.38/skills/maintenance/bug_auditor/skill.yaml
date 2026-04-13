@@ -1,0 +1,8 @@
+skill_path: maintenance/bug_auditor
+display_name: doc-bug-auditor
+description: Reviews a Main Sequence project for status, blockers, failures, and completion.
+sdk_package: mainsequence
+sdk_version: 3.17.38
+installed_bundle_package: agent_scaffold
+installed_skill_file: /Users/jose/code/MainSequenceClientSide/SdkAgentTraining/.venv/lib/python3.14/site-packages/agent_scaffold/skills/maintenance/bug_auditor/SKILL.md
+copied_skill_file: /Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/3.17.38/skills/maintenance/bug_auditor/source/SKILL.md

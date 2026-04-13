@@ -1,0 +1,33 @@
+sdk_version: 3.17.38
+default_case_set: v1
+skills:
+  application_surfaces/api_surfaces:
+    case_set: v1
+  command_center/app_components:
+    case_set: v1
+  command_center/workspace_builder:
+    case_set: v1
+  dashboards/streamlit:
+    case_set: v1
+  data_access/exploration:
+    case_set: v1
+  data_publishing/data_nodes:
+    case_set: v1
+  data_publishing/simple_tables:
+    case_set: v1
+  maintenance/bug_auditor:
+    case_set: v1
+  maintenance/local_journal:
+    case_set: v1
+  markets_platform/assets_and_translation:
+    case_set: v1
+  markets_platform/instruments_and_pricing:
+    case_set: v1
+  markets_platform/virtualfundbuilder:
+    case_set: v1
+  platform_operations/access_control_and_sharing:
+    case_set: v1
+  platform_operations/orchestration_and_releases:
+    case_set: v1
+  project_builder:
+    case_set: v1

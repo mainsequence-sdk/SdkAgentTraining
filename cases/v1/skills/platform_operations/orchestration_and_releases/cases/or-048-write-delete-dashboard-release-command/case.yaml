@@ -1,0 +1,24 @@
+id: or-048-write-delete-dashboard-release-command
+title: Author the dashboard release delete command
+skill_path: platform_operations/orchestration_and_releases
+case_set_version: v1
+authored_against_sdk_version: 3.17.33
+tags:
+- cli
+- resources
+- releases
+- dashboard
+- delete
+- authoring
+difficulty: medium
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+- Uses `delete_dashboard`
+- Includes the release id
+- Includes `--yes` to skip confirmation
+source_docs:
+- docs/tutorial/dashboards/streamlit/streamlit_integration_2.md
+- mainsequence/cli/cli.py

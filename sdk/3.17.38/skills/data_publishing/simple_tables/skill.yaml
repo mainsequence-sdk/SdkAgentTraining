@@ -1,0 +1,12 @@
+skill_path: data_publishing/simple_tables
+display_name: mainsequence-simple-tables
+description: Use this skill when the task is about defining, changing, querying, or
+  reviewing Main Sequence SimpleTables and SimpleTableUpdaters. This skill owns row
+  schemas, backend-managed ids, insert versus overwrite behavior, filtering, foreign
+  keys, and validation rules. It does not own DataNode producers, API route contracts,
+  scheduling, or sharing policy.
+sdk_package: mainsequence
+sdk_version: 3.17.38
+installed_bundle_package: agent_scaffold
+installed_skill_file: /Users/jose/code/MainSequenceClientSide/SdkAgentTraining/.venv/lib/python3.14/site-packages/agent_scaffold/skills/data_publishing/simple_tables/SKILL.md
+copied_skill_file: /Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/3.17.38/skills/data_publishing/simple_tables/source/SKILL.md

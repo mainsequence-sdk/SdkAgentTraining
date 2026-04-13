@@ -1,0 +1,23 @@
+id: or-028-create-one-off-job-command
+title: Author a one-off scheduled job command
+skill_path: platform_operations/orchestration_and_releases
+case_set_version: v1
+authored_against_sdk_version: 3.17.33
+tags:
+- cli
+- jobs
+- one-off
+- authoring
+difficulty: hard
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+- Uses the documented one-off flags
+- Includes schedule start time
+- Includes `--schedule-one-off`
+- Includes `--related-image-id 77`
+source_docs:
+- docs/tutorial/scheduling_jobs.md
+- docs/knowledge/infrastructure/scheduling_jobs.md

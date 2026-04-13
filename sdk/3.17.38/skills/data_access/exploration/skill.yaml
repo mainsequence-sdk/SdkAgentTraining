@@ -1,0 +1,9 @@
+skill_path: data_access/exploration
+display_name: mainsequence-data-exploration
+description: Use this skill when the task is to discover what `DataNode` or `SimpleTable`
+  data already exists on the Main Sequence platform before implementation starts.
+sdk_package: mainsequence
+sdk_version: 3.17.38
+installed_bundle_package: agent_scaffold
+installed_skill_file: /Users/jose/code/MainSequenceClientSide/SdkAgentTraining/.venv/lib/python3.14/site-packages/agent_scaffold/skills/data_access/exploration/SKILL.md
+copied_skill_file: /Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/3.17.38/skills/data_access/exploration/source/SKILL.md

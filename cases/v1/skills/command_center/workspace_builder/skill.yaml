@@ -1,0 +1,8 @@
+case_set_version: v1
+skill_path: command_center/workspace_builder
+display_name: command-center-workspace-builder
+description: Use this skill when the task is about creating, updating, validating,
+  or reviewing Main Sequence Command Center workspaces. This skill owns workspace
+  documents, widget instance payload resolution, layout decisions, shared versus user
+  state, and widget-scoped mutation. It does not own AppComponent form contracts,
+  API implementation, or Streamlit dashboards.

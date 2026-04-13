@@ -1,0 +1,8 @@
+case_set_version: v1
+skill_path: project_builder
+display_name: mainsequence-project
+description: Use this skill to bootstrap work in a Main Sequence repository. This
+  skill owns project context verification, docs-first behavior, success-definition
+  discipline, and routing between specialized domain skills and the maintenance skill.
+  It does not own domain implementation semantics or direct reconciliation of the
+  project-state files under `.agents/`.
