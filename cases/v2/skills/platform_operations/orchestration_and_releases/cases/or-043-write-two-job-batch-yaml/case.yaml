@@ -1,0 +1,26 @@
+id: or-043-write-two-job-batch-yaml
+title: Author a two-job batch file shape
+skill_path: platform_operations/orchestration_and_releases
+case_set_version: v2
+authored_against_sdk_version: 3.17.33
+tags:
+- yaml
+- jobs
+- batch
+- authoring
+difficulty: hard
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+- Uses one top-level `jobs` list
+- Defines each job separately
+- Uses valid schedule objects
+- Keeps both jobs eligible for one shared selected image in batch flow
+source_docs:
+- docs/tutorial/scheduling_jobs.md
+- docs/knowledge/infrastructure/scheduling_jobs.md
+target_sdk_version: 4.4.5
+migrated_from_case_set: v1
+migration_status: pending_revalidation

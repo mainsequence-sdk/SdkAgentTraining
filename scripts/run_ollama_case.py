@@ -82,6 +82,13 @@ def load_case_map(sdk_root: Path) -> dict:
     return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
 
 
+def load_source_of_truth(sdk_root: Path) -> dict:
+    path = sdk_root / "source-of-truth.yaml"
+    if not path.exists():
+        return {}
+    return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+
+
 def case_sets_for_sdk(sdk_root: Path) -> list[str]:
     case_map = load_case_map(sdk_root)
     case_sets = set()
@@ -174,13 +181,23 @@ def create_run_root(sdk_version: str, agent: str, model: str) -> Path:
     return run_root
 
 
-def write_run_manifest(run_root: Path, sdk_version: str, agent: str, model: str, base_url: str) -> None:
+def write_run_manifest(
+    run_root: Path,
+    sdk_root: Path,
+    sdk_version: str,
+    agent: str,
+    model: str,
+    base_url: str,
+) -> None:
     manifest = {
         "run_id": f"{sdk_version}:{slugify(agent)}:{slugify(model)}:{run_root.name}",
         "created_at": run_root.name,
         "sdk": {
             "package": "mainsequence",
             "version": sdk_version,
+            "snapshot_root": str(sdk_root),
+            "source_of_truth_file": str(sdk_root / "source-of-truth.yaml"),
+            "source_of_truth": load_source_of_truth(sdk_root),
         },
         "agent": {
             "name": agent,
@@ -307,7 +324,7 @@ def main() -> int:
     system_prompt, user_prompt = build_prompt_bundle(case_path, sdk_root, skill_root)
 
     run_root = create_run_root(sdk_version, args.agent, args.model)
-    write_run_manifest(run_root, sdk_version, args.agent, args.model, args.base_url)
+    write_run_manifest(run_root, sdk_root, sdk_version, args.agent, args.model, args.base_url)
 
     chat_payload = run_ollama_chat(
         base_url=args.base_url,

@@ -1,0 +1,16 @@
+passing_score: 0.9
+criteria:
+  - id: create-command
+    weight: 0.4
+    description: Uses `mainsequence constants create MODEL__DEFAULT_WINDOW 252`.
+  - id: sdk-read
+    weight: 0.35
+    description: Uses `Constant.get(name="MODEL__DEFAULT_WINDOW").value` or `Constant.get_value("MODEL__DEFAULT_WINDOW")`.
+  - id: resource-choice
+    weight: 0.15
+    description: States that `Constant` is the correct resource for non-secret runtime configuration.
+  - id: explanation
+    weight: 0.1
+    description: Explains why this should not be modeled as a `Secret`.
+notes:
+  - Any answer that creates a `Secret` here should fail.

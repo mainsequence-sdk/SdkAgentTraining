@@ -1,0 +1,55 @@
+id: dn-003-dynamic-interpolated-price-storage
+title: Design a dynamic interpolated-price DataNode storage contract
+skill_path: data_publishing/data_nodes
+case_set_version: v2
+authored_against_sdk_version: 4.4.5
+target_sdk_version: 4.4.5
+tags:
+- data_nodes
+- dynamic-storage
+- dependencies
+- asset-identifier
+- difficult
+difficulty: hard
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+- Derives output storage identity from source table UID, source cadence, upsample frequency, and interpolation rule
+- Exposes source price DataNode or APIDataNode as an explicit dependency
+- Keeps storage identity components out of row columns unless they are real observations
+- Validates asset-scoped incremental output and nanosecond UTC index
+evaluator:
+  name: rule-based-checklist
+  method: rule-based-checklist
+case_source_of_truth:
+  kind: ms-markets-reference-implementation
+  package: ms-markets
+  version: 0.0.71
+  repository: https://github.com/mainsequence-projects/MainSequenceMarkets
+  ref: refs/tags/v0.0.71
+  tree_url: https://github.com/mainsequence-projects/MainSequenceMarkets/tree/v0.0.71
+  files:
+  - path: src/msm_portfolios/data_nodes/prices/storage.py
+    symbols:
+    - InterpolatedPricesStorage
+    - ExternalPricesStorage
+    - configured_interpolated_prices_storage
+    - interpolated_prices_storage_identity_components
+  - path: src/msm_portfolios/contrib/prices/data_nodes.py
+    symbols:
+    - InterpolatedPricesConfig
+    - InterpolatedPrices
+  - path: src/msm_portfolios/configuration.py
+    symbols:
+    - PricesConfiguration
+  - path: src/msm/data_nodes/assets/asset_indexed.py
+    symbols:
+    - AssetIndexedDataNode
+supporting_context:
+  sdk_skill_source:
+  - sdk/4.4.5/skills/data_publishing/data_nodes/source/SKILL.md
+  - sdk/4.4.5/skills/data_publishing/meta_tables/source/SKILL.md
+  training_notes:
+  - docs/training_sources/ms-markets/metatables-and-datanodes-case-plan.md

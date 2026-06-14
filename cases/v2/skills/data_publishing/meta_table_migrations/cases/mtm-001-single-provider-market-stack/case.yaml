@@ -1,0 +1,56 @@
+id: mtm-001-single-provider-market-stack
+title: Set up one SDK migration provider for a market stack
+skill_path: data_publishing/meta_table_migrations
+case_set_version: v2
+authored_against_sdk_version: 4.4.5
+target_sdk_version: 4.4.5
+tags:
+- metatable-migrations
+- alembic
+- provider
+- ms-markets
+difficulty: hard
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+- Uses one SDK AlembicMetaTableMigration provider for core, portfolio, and pricing model roots
+- Uses SDK helper builders and explicit model registry
+- Avoids separate subpackage providers unless there is a real provider boundary
+- Provides current, revision, and upgrade commands with provider path
+evaluator:
+  name: rule-based-checklist
+  method: rule-based-checklist
+case_source_of_truth:
+  kind: ms-markets-reference-implementation
+  package: ms-markets
+  version: 0.0.71
+  repository: https://github.com/mainsequence-projects/MainSequenceMarkets
+  ref: refs/tags/v0.0.71
+  tree_url: https://github.com/mainsequence-projects/MainSequenceMarkets/tree/v0.0.71
+  files:
+  - path: src/msm/migrations/__init__.py
+    symbols:
+    - migration
+  - path: src/msm/models/registration.py
+    symbols:
+    - markets_meta_table_models
+    - resolve_markets_meta_table_models
+    - build_markets_registration_requests
+  - path: src/msm/models/__init__.py
+    symbols:
+    - markets_sqlalchemy_models
+  - path: src/msm_portfolios/models/__init__.py
+    symbols:
+    - portfolio_sqlalchemy_models
+  - path: src/msm_pricing/models/__init__.py
+    symbols:
+    - __getattr__
+    - __dir__
+supporting_context:
+  sdk_skill_source:
+  - sdk/4.4.5/skills/data_publishing/meta_table_migrations/source/SKILL.md
+  - sdk/4.4.5/skills/data_publishing/meta_tables/source/SKILL.md
+  training_notes:
+  - docs/training_sources/ms-markets/metatables-and-datanodes-case-plan.md

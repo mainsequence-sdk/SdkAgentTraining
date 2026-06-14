@@ -1,0 +1,22 @@
+skill_path: data_access/exploration
+display_name: mainsequence-data-exploration
+description: Use this skill when the task is to discover what `DataNode` or `MetaTable`
+  data already exists on the Main Sequence platform before implementation starts.
+sdk_package: mainsequence
+sdk_version: 4.4.5
+installed_bundle_package: agent_scaffold
+installed_skill_file: /Users/jose/code/MainSequenceClientSide/SdkAgentTraining/.venv/lib/python3.14/site-packages/agent_scaffold/skills/data_access/exploration/SKILL.md
+copied_skill_file: /Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/skills/data_access/exploration/source/SKILL.md
+source_of_truth_file: /Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/source-of-truth.yaml
+upstream_git:
+  repository: https://github.com/mainsequence-sdk/mainsequence-sdk
+  ref: refs/tags/v4.4.5
+  tag: v4.4.5
+  commit: 3b5a20a344cec0c960351dc3c601d32a66a8b46e
+  verification_status: verified
+  verification:
+    method: github-api
+    checked_at: '2026-06-14'
+    ref_url: https://api.github.com/repos/mainsequence-sdk/mainsequence-sdk/git/ref/tags/v4.4.5
+    rejected_refs:
+    - refs/tags/4.4.5

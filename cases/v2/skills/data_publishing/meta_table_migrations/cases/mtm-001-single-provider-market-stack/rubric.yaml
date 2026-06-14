@@ -1,0 +1,27 @@
+passing_score: 0.88
+hard_fail_checks:
+- id: migration-first
+  description: Must use SDK-managed Alembic migration workflow, not direct registration.
+- id: provider-scope
+  description: Must recommend one provider for the shared market stack unless an explicit lifecycle boundary exists.
+- id: helper-pattern
+  description: Must use SDK helper builders or generated scaffold pattern.
+criteria:
+- id: provider-definition
+  weight: 0.2
+  description: Correctly describes package, namespace, script location, metadata, alembic registry, and metatable models.
+- id: model-registry
+  weight: 0.2
+  description: Uses explicit de-duplicated model registry covering all three import roots.
+- id: cli-workflow
+  weight: 0.2
+  description: Includes correct `current`, `revision`, and `upgrade` commands with provider path.
+- id: lifecycle-explanation
+  weight: 0.2
+  description: Explains provider-scoped reserve, Alembic DDL, finalization, and optional hook.
+- id: runtime-boundary
+  weight: 0.1
+  description: States runtime is attach-only and cannot create/register schema.
+- id: non-goals
+  weight: 0.1
+  description: Rejects scanning, direct `.register()`, custom payloads, and data-source UID threading.

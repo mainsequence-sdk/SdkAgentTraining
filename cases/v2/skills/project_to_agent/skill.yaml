@@ -1,0 +1,8 @@
+skill_path: project_to_agent
+case_set_version: v2
+target_sdk_version: 4.4.5
+source_sdk_skill: sdk/4.4.5/skills/project_to_agent/source/SKILL.md
+display_name: mainsequence-project-to-agent
+description: Use this skill when the task is about adding agentic capabilities to
+  a Main Sequence project.
+migration_status: pending_revalidation

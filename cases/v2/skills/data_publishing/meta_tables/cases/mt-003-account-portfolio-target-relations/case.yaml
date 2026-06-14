@@ -1,0 +1,58 @@
+id: mt-003-account-portfolio-target-relations
+title: Design account-to-portfolio target allocation MetaTables
+skill_path: data_publishing/meta_tables
+case_set_version: v2
+authored_against_sdk_version: 4.4.5
+target_sdk_version: 4.4.5
+tags:
+- meta_tables
+- relational-modeling
+- portfolios
+- accounts
+- constraints
+- difficult
+difficulty: hard
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+- Models account allocation configuration as relational MetaTables, not DataNodes
+- Defines parent and relationship tables with correct FK targets and composite uniqueness
+- Separates durable target-allocation rows from time-indexed target-position facts
+- Specifies indexes, delete behavior, and governed operations
+evaluator:
+  name: rule-based-checklist
+  method: rule-based-checklist
+case_source_of_truth:
+  kind: ms-markets-reference-implementation
+  package: ms-markets
+  version: 0.0.71
+  repository: https://github.com/mainsequence-projects/MainSequenceMarkets
+  ref: refs/tags/v0.0.71
+  tree_url: https://github.com/mainsequence-projects/MainSequenceMarkets/tree/v0.0.71
+  files:
+  - path: src/msm/models/accounts/allocation_models.py
+    symbols:
+    - AccountAllocationModelTable
+  - path: src/msm/models/accounts/core.py
+    symbols:
+    - AccountTable
+    - AccountTargetAllocationTable
+    - AccountHoldingsSetTable
+    - PositionSetTable
+  - path: src/msm/models/portfolios/core.py
+    symbols:
+    - PortfolioTable
+  - path: src/msm/data_nodes/accounts/storage.py
+    symbols:
+    - TargetPositionsStorage
+  - path: src/msm/repositories/account_allocation_models.py
+    symbols:
+    - build_create_account_allocation_model_operation
+    - build_search_account_allocation_models_operation
+supporting_context:
+  sdk_skill_source:
+  - sdk/4.4.5/skills/data_publishing/meta_tables/source/SKILL.md
+  training_notes:
+  - docs/training_sources/ms-markets/metatables-and-datanodes-case-plan.md

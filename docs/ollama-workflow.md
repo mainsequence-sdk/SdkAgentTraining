@@ -59,7 +59,7 @@ You can override that when needed:
 Example:
 
 ```text
-runs/sdk/3.17.38/ollama/ms-reasoning-latest/2026-04-12T16-20-00Z/
+runs/sdk/4.4.5/ollama/ms-reasoning-latest/2026-04-12T16-20-00Z/
 ├── manifest.json
 ├── evaluations/
 │   └── or-001-recurring-artifact-job.json

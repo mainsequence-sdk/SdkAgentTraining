@@ -8,6 +8,8 @@ import re
 import subprocess
 from pathlib import Path
 
+import yaml
+
 
 def build_parser() -> argparse.ArgumentParser:
     repo_root = Path(__file__).resolve().parents[1]
@@ -65,6 +67,13 @@ def read_git_commit(source_checkout: Path | None) -> str | None:
         return None
 
 
+def load_source_of_truth(repo_root: Path, sdk_version: str) -> dict:
+    path = repo_root / "sdk" / sdk_version / "source-of-truth.yaml"
+    if not path.exists():
+        return {}
+    return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+
+
 def main() -> int:
     args = build_parser().parse_args()
     repo_root = args.repo_root.resolve()
@@ -85,6 +94,9 @@ def main() -> int:
         "sdk": {
             "package": args.package,
             "version": sdk_version,
+            "snapshot_root": str(repo_root / "sdk" / sdk_version),
+            "source_of_truth_file": str(repo_root / "sdk" / sdk_version / "source-of-truth.yaml"),
+            "source_of_truth": load_source_of_truth(repo_root, sdk_version),
             "source_checkout": str(source_checkout) if source_checkout else None,
             "git_commit": read_git_commit(source_checkout),
         },

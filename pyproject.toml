@@ -9,7 +9,7 @@ description = "Training and evaluation corpus for mainsequence-sdk agent_scaffol
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-  "mainsequence==3.17.38",
+  "mainsequence==4.4.5",
   "pyyaml",
 ]
 

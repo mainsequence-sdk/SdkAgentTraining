@@ -1,0 +1,26 @@
+passing_score: 0.9
+hard_fail_checks:
+- id: hidden-dependency-detected
+  description: Must flag dependency construction inside `update()` as incorrect.
+- id: raw-sql-delete-rejected
+  description: Must reject raw SQL or compiled SQL cleanup for DataNode storage.
+- id: unscoped-delete-rejected
+  description: Must reject `delete_after_date(None)` without dimension filters or index coordinates.
+- id: time-index-dtype
+  description: Must require exact `datetime64[ns, UTC]` time-index dtype.
+criteria:
+- id: dependency-pattern
+  weight: 0.25
+  description: Explains constructor/setup dependencies, deterministic `dependencies()`, and config-owned dependency storage selection.
+- id: delete-api
+  weight: 0.25
+  description: Uses `TimeIndexMetaTable.delete_after_date(...)` with correct scoped examples.
+- id: rollback-semantics
+  weight: 0.15
+  description: Distinguishes global tail rollback, scoped tail rollback, and scoped full-stream delete.
+- id: routing
+  weight: 0.15
+  description: Routes schema/FK work to MetaTables and migration lifecycle to MetaTable migrations.
+- id: validation
+  weight: 0.2
+  description: Covers DataFrame shape, time-index dtype, and no reliance on `normalize()` alone.

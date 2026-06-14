@@ -1,0 +1,13 @@
+skill_path: command_center/api_mock_prototyping
+case_set_version: v2
+target_sdk_version: 4.4.5
+source_sdk_skill: sdk/4.4.5/skills/command_center/api_mock_prototyping/source/SKILL.md
+display_name: command-center-api-mock-prototyping
+description: 'Use this skill when the task is about validating a planned Command Center
+  AppComponent API contract before backend deployment. This skill owns `apiTargetMode:
+  "mock-json"`, synthetic request and response contract authoring, request-side versus
+  response-side UI metadata separation, and testing downstream bindings in a workspace
+  before any FastAPI image build or ResourceRelease, including checking that generic
+  tabular consumers receive `core.tabular_frame@v1`. It does not own FastAPI implementation,
+  workspace layout design beyond the test harness, or release creation.'
+migration_status: pending_revalidation

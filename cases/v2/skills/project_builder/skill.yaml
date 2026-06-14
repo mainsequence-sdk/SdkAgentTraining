@@ -1,0 +1,12 @@
+skill_path: project_builder
+case_set_version: v2
+target_sdk_version: 4.4.5
+source_sdk_skill: sdk/4.4.5/skills/project_builder/source/SKILL.md
+display_name: mainsequence-project
+description: Use this skill to bootstrap work in a Main Sequence repository. This
+  skill owns project context verification, docs-first behavior, success-definition
+  discipline, and routing between specialized domain skills and the maintenance skill.
+  It does not own domain implementation semantics or direct reconciliation of the
+  project-state files under `.agents/`.
+migrated_from_case_set: v1
+migration_status: pending_revalidation

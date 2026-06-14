@@ -1,0 +1,29 @@
+passing_score: 0.9
+hard_fail_checks:
+- id: storage-first
+  description: Must define PlatformTimeIndexMetaTable storage as the canonical schema owner before DataNode logic.
+- id: canonical-identity
+  description: Must use canonical `asset_identifier`, not vendor ticker, as the identity dimension.
+- id: config-boundary
+  description: Must keep schema, indexes, FKs, and published metadata out of DataNodeConfiguration.
+- id: dataframe-contract
+  description: Must require DataFrame output indexed by time first with `datetime64[ns, UTC]` and no duplicate keys.
+criteria:
+- id: storage-contract
+  weight: 0.25
+  description: Specifies table identity, cadence, index names, columns, metadata, and FK.
+- id: data-node-contract
+  weight: 0.2
+  description: Specifies constructor pattern, deterministic dependencies, update method, and no-op behavior.
+- id: incremental-behavior
+  weight: 0.15
+  description: Uses UpdateStatistics and avoids full-history fetches by default.
+- id: migration-path
+  weight: 0.15
+  description: Routes storage registration through the MetaTable migration provider and CLI.
+- id: validation
+  weight: 0.15
+  description: Covers nanosecond UTC, duplicate index prevention, and shape matching.
+- id: non-goals
+  weight: 0.1
+  description: Rejects `test_node`, runtime registration, config schema fields, ticker identity, and raw SQL persistence.

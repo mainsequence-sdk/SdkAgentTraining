@@ -87,7 +87,48 @@ Keep that split clear.
 
 Do not mix row schema concerns with backend updater concerns.
 
-### 2. `id` is backend-managed
+### 2. `SimpleTable` schema rules are hard constraints
+
+For authored schemas:
+
+- the row model must subclass `SimpleTable`
+- users must not declare `id`
+- the schema must not rely on undeclared extra fields
+- logical and physical column names must be `63` characters or fewer
+
+Per-field metadata must also follow the active SDK contract:
+
+- `ForeignKey.target` must be a non-empty dependency key
+- `ForeignKey.on_delete` must be one of:
+  - `cascade`
+  - `restrict`
+  - `set_null`
+- a field must not declare multiple `ForeignKey` metadata entries
+- a field must not declare multiple `Index` metadata entries
+- a field must not declare multiple `Ops` metadata entries
+
+### 3. `SimpleTableUpdater` construction rules are hard constraints
+
+For updater implementations:
+
+- the updater must subclass `SimpleTableUpdater`
+- `SIMPLE_TABLE_SCHEMA` must be defined
+- `SIMPLE_TABLE_SCHEMA` must be a `SimpleTable` subclass
+- updater configuration must use `SimpleTableUpdaterConfiguration` / `BaseConfiguration`
+
+Do not use removed hashing patterns such as:
+
+- `_ARGS_IGNORE_IN_STORAGE_HASH`
+- `init_meta`
+- `ignore_from_storage_hash`
+
+Use current Pydantic field metadata rules:
+
+- updater-scope-only config fields should use `json_schema_extra={"update_only": True}`
+- descriptive runtime-only config fields should use `json_schema_extra={"runtime_only": True}`
+- no config field may be both `update_only` and `runtime_only`
+
+### 4. `id` is backend-managed
 
 Users must not declare `id` in a `SimpleTable` subclass.
 
@@ -97,7 +138,7 @@ The normal lifecycle is:
 2. read rows back
 3. use returned `id` values for sparse updates, upserts, or deletes
 
-### 3. Unique index is not overwrite key
+### 5. Unique index is not overwrite key
 
 A unique business key is useful for lookup and constraints.
 
@@ -105,7 +146,25 @@ It is not the backend mutation key for overwrite/upsert payloads.
 
 If `update()` returns `(records, True)`, those records must already include backend ids.
 
-### 4. Insert-only is the default when ids do not exist yet
+### 6. `update()` return rules are hard constraints
+
+On the default updater path:
+
+- `update()` must not return `None`
+- `update()` must return either:
+  - a sequence of `SIMPLE_TABLE_SCHEMA` instances
+  - `(sequence_of_schema_instances, overwrite_bool)`
+- returned records must be instances of the declared schema
+
+Do not return:
+
+- raw dict payloads
+- DataFrames
+- mixed record types
+
+Those are not the default `SimpleTableUpdater.update()` contract.
+
+### 7. Insert-only is the default when ids do not exist yet
 
 Use insert-only when:
 
@@ -113,7 +172,16 @@ Use insert-only when:
 - loading new records
 - the records do not yet carry backend ids
 
-### 5. Filters come from the schema and execute through the updater
+### 8. Foreign-key targets must resolve through real updater dependencies
+
+If the schema declares `ForeignKey("some_dependency_key")`:
+
+- that key must resolve through `dependencies()`
+- the resolved dependency must be a `SimpleTableUpdater`
+- a foreign key must not point to the updater itself
+- cyclic simple-table foreign-key resolution is invalid
+
+### 9. Filters come from the schema and execute through the updater
 
 Build filter expressions from the schema surface.
 
@@ -121,7 +189,16 @@ Execute them through the updater.
 
 Do not bypass the updater with hand-built backend table requests.
 
-### 6. Foreign keys must reflect actual dependency flow
+Typed filter and join rules are also hard constraints:
+
+- filter expressions must only use fields allowed by `Ops.filter=True`
+- ordering keys must only use fields allowed by `Ops.order=True`
+- simple-table requests must target a concrete `storage_hash`
+- simple-table joins must target a concrete `storage_hash`
+- simple-table joins must not use `node_unique_identifier`
+- `joins=` must contain only `JoinSpec` or `JoinHandle`
+
+### 10. Foreign keys must reflect actual dependency flow
 
 If one table depends on another:
 
@@ -133,10 +210,18 @@ If one table depends on another:
 When reviewing an existing SimpleTable workflow, look for:
 
 - user-declared `id`
+- overlength logical or physical column names
+- invalid or duplicated field metadata
 - treating a business key as the overwrite key
+- missing `SIMPLE_TABLE_SCHEMA`
+- invalid updater configuration or removed hashing patterns
+- `update()` returning `None`, dicts, or other invalid payloads
 - overwrite/upsert without backend ids
 - foreign keys that do not match the real dependency flow
+- foreign-key targets not declared in `dependencies()`
+- self-referential or cyclic foreign-key resolution
 - filters bypassing the typed schema surface
+- filters or ordering on fields that were not declared operationally valid
 - a table that should really be modeled as a DataNode instead
 
 ## Validation Checklist
@@ -145,22 +230,32 @@ Do not claim success until you have checked:
 
 - the schema matches the intended row contract
 - `id` is not user-declared
+- column names are valid
 - indexes are intentional
+- field metadata is valid
+- `SIMPLE_TABLE_SCHEMA` is defined correctly
+- updater config metadata is classified correctly
 - foreign keys point to the correct dependency targets
 - insert-only versus overwrite behavior is correct
+- `update()` returns typed schema instances
 - overwrite/upsert payloads include backend ids when required
 - filters run through the updater
+- filters and ordering only use allowed fields
 
 For join filters, also check:
 
 - aliases are readable
 - resolved tables are used intentionally
+- joins use valid simple-table join semantics
 - the base row type returned by the updater is still the expected one
 
 ## This Skill Must Stop And Escalate When
 
 - a proposed schema declares `id`
+- field names or metadata violate the SDK schema contract
 - overwrite/upsert is attempted without backend ids
+- `update()` return shape is unclear or invalid
+- foreign-key dependency resolution is unclear
 - the task really requires a time-series published table
 - the workflow requires a richer relational model than `SimpleTable` is meant to support
 - the task is actually an API or orchestration problem

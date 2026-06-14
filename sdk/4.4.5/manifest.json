@@ -1,0 +1,569 @@
+{
+  "sdk_package": "mainsequence",
+  "sdk_version": "4.4.5",
+  "bundle_package": "agent_scaffold",
+  "bundle_dir": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/.venv/lib/python3.14/site-packages/agent_scaffold",
+  "source_of_truth_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/source-of-truth.yaml",
+  "source_of_truth": {
+    "sdk_package": "mainsequence",
+    "sdk_version": "4.4.5",
+    "bundle_package": "agent_scaffold",
+    "distribution": {
+      "source": "installed-python-package",
+      "project_urls": {
+        "Homepage": "https://github.com/mainsequence-sdk/mainsequence-sdk",
+        "Issues": "https://github.com/mainsequence-sdk/mainsequence-sdk/issues"
+      }
+    },
+    "upstream_git": {
+      "repository": "https://github.com/mainsequence-sdk/mainsequence-sdk",
+      "ref": "refs/tags/v4.4.5",
+      "tag": "v4.4.5",
+      "commit": "3b5a20a344cec0c960351dc3c601d32a66a8b46e",
+      "verification_status": "verified",
+      "verification": {
+        "method": "github-api",
+        "checked_at": "2026-06-14",
+        "ref_url": "https://api.github.com/repos/mainsequence-sdk/mainsequence-sdk/git/ref/tags/v4.4.5",
+        "rejected_refs": [
+          "refs/tags/4.4.5"
+        ]
+      }
+    },
+    "evaluated_snapshot": {
+      "snapshot_root": "sdk/4.4.5",
+      "bundle_dir": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/.venv/lib/python3.14/site-packages/agent_scaffold",
+      "agents_file": "sdk/4.4.5/agent_scaffold/AGENTS.md",
+      "skills_root": "sdk/4.4.5/skills",
+      "generator": "scripts/populate_training_skills.py"
+    },
+    "notes": [
+      "The evaluated prompt context is the copied local snapshot under `sdk/4.4.5/`.",
+      "The upstream git ref is the audit anchor for the public SDK source used to create that installed package.",
+      "If the installed package is rebuilt from a different commit with the same version, this file must be updated or the snapshot must be treated as unverified."
+    ]
+  },
+  "skills_count": 20,
+  "skills": [
+    {
+      "skill_path": "a2a_communication",
+      "display_name": "a2a_communication",
+      "description": "Canonical guidance for discovering other agents and communicating with them through Astro's A2A flow.",
+      "sdk_package": "mainsequence",
+      "sdk_version": "4.4.5",
+      "installed_bundle_package": "agent_scaffold",
+      "installed_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/.venv/lib/python3.14/site-packages/agent_scaffold/skills/a2a_communication/SKILL.md",
+      "copied_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/skills/a2a_communication/source/SKILL.md",
+      "source_of_truth_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/source-of-truth.yaml",
+      "upstream_git": {
+        "repository": "https://github.com/mainsequence-sdk/mainsequence-sdk",
+        "ref": "refs/tags/v4.4.5",
+        "tag": "v4.4.5",
+        "commit": "3b5a20a344cec0c960351dc3c601d32a66a8b46e",
+        "verification_status": "verified",
+        "verification": {
+          "method": "github-api",
+          "checked_at": "2026-06-14",
+          "ref_url": "https://api.github.com/repos/mainsequence-sdk/mainsequence-sdk/git/ref/tags/v4.4.5",
+          "rejected_refs": [
+            "refs/tags/4.4.5"
+          ]
+        }
+      }
+    },
+    {
+      "skill_path": "application_surfaces/api_surfaces",
+      "display_name": "mainsequence-api-surfaces",
+      "description": "Use this skill when the task is about building or changing APIs in a Main Sequence repository. In a Main Sequence project, project APIs should be implemented as FastAPI project resources. Unless the user explicitly says the API is standalone or for a non-Command Center client, assume the API is meant to be Command Center integrated, load the related Command Center skills, and use Command Center SDK response models whenever the endpoint can reasonably match them. Main Sequence is platform-first: a Command Center-facing project API is not considered usable until it exists as a FastAPI project resource and has a corresponding FastAPI ResourceRelease. Resource and release creation belong to the orchestration-and-releases skill. This skill owns FastAPI structure, request and response contracts, request user binding, APIDataNode and MetaTable consumption inside APIs, and exact widget-facing API response contracts. It does not own producer-side DataNode or MetaTable design, workspace payloads, or scheduling and release workflows.",
+      "sdk_package": "mainsequence",
+      "sdk_version": "4.4.5",
+      "installed_bundle_package": "agent_scaffold",
+      "installed_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/.venv/lib/python3.14/site-packages/agent_scaffold/skills/application_surfaces/api_surfaces/SKILL.md",
+      "copied_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/skills/application_surfaces/api_surfaces/source/SKILL.md",
+      "source_of_truth_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/source-of-truth.yaml",
+      "upstream_git": {
+        "repository": "https://github.com/mainsequence-sdk/mainsequence-sdk",
+        "ref": "refs/tags/v4.4.5",
+        "tag": "v4.4.5",
+        "commit": "3b5a20a344cec0c960351dc3c601d32a66a8b46e",
+        "verification_status": "verified",
+        "verification": {
+          "method": "github-api",
+          "checked_at": "2026-06-14",
+          "ref_url": "https://api.github.com/repos/mainsequence-sdk/mainsequence-sdk/git/ref/tags/v4.4.5",
+          "rejected_refs": [
+            "refs/tags/4.4.5"
+          ]
+        }
+      }
+    },
+    {
+      "skill_path": "command_center/adapter_from_api",
+      "display_name": "command-center-adapter-from-api",
+      "description": "Use when building or changing an API so Command Center can consume it through an Adapter from API connection. This skill defines the provider-side API contract standards required for Command Center connection discovery, health checks, operation selection, config fields, secret injection metadata, canonical `TabularFrameResponse` outputs, and optional response-mapping metadata for frontend/editor context or future explicit transforms. It does not define general API architecture and does not imply the API may only serve these endpoints.",
+      "sdk_package": "mainsequence",
+      "sdk_version": "4.4.5",
+      "installed_bundle_package": "agent_scaffold",
+      "installed_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/.venv/lib/python3.14/site-packages/agent_scaffold/skills/command_center/adapter_from_api/SKILL.md",
+      "copied_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/skills/command_center/adapter_from_api/source/SKILL.md",
+      "source_of_truth_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/source-of-truth.yaml",
+      "upstream_git": {
+        "repository": "https://github.com/mainsequence-sdk/mainsequence-sdk",
+        "ref": "refs/tags/v4.4.5",
+        "tag": "v4.4.5",
+        "commit": "3b5a20a344cec0c960351dc3c601d32a66a8b46e",
+        "verification_status": "verified",
+        "verification": {
+          "method": "github-api",
+          "checked_at": "2026-06-14",
+          "ref_url": "https://api.github.com/repos/mainsequence-sdk/mainsequence-sdk/git/ref/tags/v4.4.5",
+          "rejected_refs": [
+            "refs/tags/4.4.5"
+          ]
+        }
+      }
+    },
+    {
+      "skill_path": "command_center/api_mock_prototyping",
+      "display_name": "command-center-api-mock-prototyping",
+      "description": "Use this skill when the task is about validating a planned Command Center AppComponent API contract before backend deployment. This skill owns `apiTargetMode: \"mock-json\"`, synthetic request and response contract authoring, request-side versus response-side UI metadata separation, and testing downstream bindings in a workspace before any FastAPI image build or ResourceRelease, including checking that generic tabular consumers receive `core.tabular_frame@v1`. It does not own FastAPI implementation, workspace layout design beyond the test harness, or release creation.",
+      "sdk_package": "mainsequence",
+      "sdk_version": "4.4.5",
+      "installed_bundle_package": "agent_scaffold",
+      "installed_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/.venv/lib/python3.14/site-packages/agent_scaffold/skills/command_center/api_mock_prototyping/SKILL.md",
+      "copied_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/skills/command_center/api_mock_prototyping/source/SKILL.md",
+      "source_of_truth_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/source-of-truth.yaml",
+      "upstream_git": {
+        "repository": "https://github.com/mainsequence-sdk/mainsequence-sdk",
+        "ref": "refs/tags/v4.4.5",
+        "tag": "v4.4.5",
+        "commit": "3b5a20a344cec0c960351dc3c601d32a66a8b46e",
+        "verification_status": "verified",
+        "verification": {
+          "method": "github-api",
+          "checked_at": "2026-06-14",
+          "ref_url": "https://api.github.com/repos/mainsequence-sdk/mainsequence-sdk/git/ref/tags/v4.4.5",
+          "rejected_refs": [
+            "refs/tags/4.4.5"
+          ]
+        }
+      }
+    },
+    {
+      "skill_path": "command_center/app_components",
+      "display_name": "command-center-app-components",
+      "description": "Use this skill when the task is about AppComponent widgets in a Main Sequence project. This skill owns AppComponent generated request forms, response-side editable-form and notification UI contracts, dynamic request/response binding contracts, and the boundary between AppComponent responses and widget-facing output contracts, including requiring generic tabular consumers to receive core.tabular_frame@v1 instead of ad hoc AppComponent JSON. Before changing AppComponent payloads or contracts, verify the target widget in the Command Center registry through the CLI. Source order is strict: registry detail first, SDK client models second, local Main Sequence repository docs/models third only if the first two still leave something unresolved. Main Sequence is platform-first: if an AppComponent depends on a project API, that API must already exist as a FastAPI project resource and have a corresponding FastAPI ResourceRelease before the AppComponent is considered usable from Command Center. Resource and release creation belong to the orchestration-and-releases skill. It does not own workspace layout, generic FastAPI design, or Streamlit dashboards.",
+      "sdk_package": "mainsequence",
+      "sdk_version": "4.4.5",
+      "installed_bundle_package": "agent_scaffold",
+      "installed_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/.venv/lib/python3.14/site-packages/agent_scaffold/skills/command_center/app_components/SKILL.md",
+      "copied_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/skills/command_center/app_components/source/SKILL.md",
+      "source_of_truth_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/source-of-truth.yaml",
+      "upstream_git": {
+        "repository": "https://github.com/mainsequence-sdk/mainsequence-sdk",
+        "ref": "refs/tags/v4.4.5",
+        "tag": "v4.4.5",
+        "commit": "3b5a20a344cec0c960351dc3c601d32a66a8b46e",
+        "verification_status": "verified",
+        "verification": {
+          "method": "github-api",
+          "checked_at": "2026-06-14",
+          "ref_url": "https://api.github.com/repos/mainsequence-sdk/mainsequence-sdk/git/ref/tags/v4.4.5",
+          "rejected_refs": [
+            "refs/tags/4.4.5"
+          ]
+        }
+      }
+    },
+    {
+      "skill_path": "command_center/connections",
+      "display_name": "command-center-connections",
+      "description": "Use this skill when the task is about selecting, creating, validating, or documenting Command Center connections before workspace widgets consume data. This skill owns connection type discovery, connection instance readiness, query model/output-contract checks, connection-first workspace dataflow, and routing backend adapter gaps. Use this before creating data-consuming widgets. It does not own workspace layout, widget JSON mutation, AppComponent form contracts, or generic FastAPI implementation.",
+      "sdk_package": "mainsequence",
+      "sdk_version": "4.4.5",
+      "installed_bundle_package": "agent_scaffold",
+      "installed_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/.venv/lib/python3.14/site-packages/agent_scaffold/skills/command_center/connections/SKILL.md",
+      "copied_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/skills/command_center/connections/source/SKILL.md",
+      "source_of_truth_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/source-of-truth.yaml",
+      "upstream_git": {
+        "repository": "https://github.com/mainsequence-sdk/mainsequence-sdk",
+        "ref": "refs/tags/v4.4.5",
+        "tag": "v4.4.5",
+        "commit": "3b5a20a344cec0c960351dc3c601d32a66a8b46e",
+        "verification_status": "verified",
+        "verification": {
+          "method": "github-api",
+          "checked_at": "2026-06-14",
+          "ref_url": "https://api.github.com/repos/mainsequence-sdk/mainsequence-sdk/git/ref/tags/v4.4.5",
+          "rejected_refs": [
+            "refs/tags/4.4.5"
+          ]
+        }
+      }
+    },
+    {
+      "skill_path": "command_center/workspace_analysis",
+      "display_name": "command-center-workspace-analysis",
+      "description": "Use this skill when the task is about analyzing a Main Sequence Command Center workspace snapshot and answering questions about the current state of the workspace. This skill is for interpreting what the workspace was actually showing at capture time. Each widget snapshot contains that widget's current state, and agents should answer questions from those widget dumps instead of from persisted workspace metadata.",
+      "sdk_package": "mainsequence",
+      "sdk_version": "4.4.5",
+      "installed_bundle_package": "agent_scaffold",
+      "installed_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/.venv/lib/python3.14/site-packages/agent_scaffold/skills/command_center/workspace_analysis/SKILL.md",
+      "copied_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/skills/command_center/workspace_analysis/source/SKILL.md",
+      "source_of_truth_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/source-of-truth.yaml",
+      "upstream_git": {
+        "repository": "https://github.com/mainsequence-sdk/mainsequence-sdk",
+        "ref": "refs/tags/v4.4.5",
+        "tag": "v4.4.5",
+        "commit": "3b5a20a344cec0c960351dc3c601d32a66a8b46e",
+        "verification_status": "verified",
+        "verification": {
+          "method": "github-api",
+          "checked_at": "2026-06-14",
+          "ref_url": "https://api.github.com/repos/mainsequence-sdk/mainsequence-sdk/git/ref/tags/v4.4.5",
+          "rejected_refs": [
+            "refs/tags/4.4.5"
+          ]
+        }
+      }
+    },
+    {
+      "skill_path": "command_center/workspace_builder",
+      "display_name": "command-center-workspace-builder",
+      "description": "Use this skill when the task is about creating, updating, validating, or reviewing Main Sequence Command Center workspaces after the workspace design is known. This skill owns workspace documents, widget instance payload resolution, safe mutation, shared versus user state, widget-scoped mutation, connection-backed source widget mounting, and grounding those decisions against the richer widget-type registry contract plus the SDK command_center client models. Use workspace_design first when the task is still about deciding which widgets, layout, narrative, or visualization strategy should express the user intent; use command-center-connections first when source data or query contracts are unresolved. Source order is strict: registry detail first, SDK client models second, local Main Sequence repository docs/models third only when the first two still leave instance payload questions unresolved. Main Sequence is platform-first: if a mounted widget or AppComponent depends on a project API, that API must already exist as a FastAPI project resource and have a corresponding FastAPI ResourceRelease before the workspace flow is considered usable. Resource and release creation belong to the orchestration-and-releases skill. It does not own AppComponent form contracts, API implementation, workspace design, or Streamlit dashboards.",
+      "sdk_package": "mainsequence",
+      "sdk_version": "4.4.5",
+      "installed_bundle_package": "agent_scaffold",
+      "installed_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/.venv/lib/python3.14/site-packages/agent_scaffold/skills/command_center/workspace_builder/SKILL.md",
+      "copied_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/skills/command_center/workspace_builder/source/SKILL.md",
+      "source_of_truth_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/source-of-truth.yaml",
+      "upstream_git": {
+        "repository": "https://github.com/mainsequence-sdk/mainsequence-sdk",
+        "ref": "refs/tags/v4.4.5",
+        "tag": "v4.4.5",
+        "commit": "3b5a20a344cec0c960351dc3c601d32a66a8b46e",
+        "verification_status": "verified",
+        "verification": {
+          "method": "github-api",
+          "checked_at": "2026-06-14",
+          "ref_url": "https://api.github.com/repos/mainsequence-sdk/mainsequence-sdk/git/ref/tags/v4.4.5",
+          "rejected_refs": [
+            "refs/tags/4.4.5"
+          ]
+        }
+      }
+    },
+    {
+      "skill_path": "command_center/workspace_design",
+      "display_name": "command-center-workspace-design",
+      "description": "Use this skill when the task is about translating user intent into a Main Sequence Command Center workspace concept. This skill owns workspace design, widget selection, visualization strategy, information architecture, connection-first dataflow planning, and deciding which widgets best express a business idea. It does not mutate workspace JSON, patch mounted widgets, create connections, create FastAPI endpoints, or create project resources/releases.",
+      "sdk_package": "mainsequence",
+      "sdk_version": "4.4.5",
+      "installed_bundle_package": "agent_scaffold",
+      "installed_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/.venv/lib/python3.14/site-packages/agent_scaffold/skills/command_center/workspace_design/SKILL.md",
+      "copied_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/skills/command_center/workspace_design/source/SKILL.md",
+      "source_of_truth_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/source-of-truth.yaml",
+      "upstream_git": {
+        "repository": "https://github.com/mainsequence-sdk/mainsequence-sdk",
+        "ref": "refs/tags/v4.4.5",
+        "tag": "v4.4.5",
+        "commit": "3b5a20a344cec0c960351dc3c601d32a66a8b46e",
+        "verification_status": "verified",
+        "verification": {
+          "method": "github-api",
+          "checked_at": "2026-06-14",
+          "ref_url": "https://api.github.com/repos/mainsequence-sdk/mainsequence-sdk/git/ref/tags/v4.4.5",
+          "rejected_refs": [
+            "refs/tags/4.4.5"
+          ]
+        }
+      }
+    },
+    {
+      "skill_path": "dashboards/streamlit",
+      "display_name": "mainsequence-dashboards-streamlit",
+      "description": "Use this skill when the task is about building a Streamlit dashboard in a Main Sequence project. This skill owns dashboard folder structure, app-owned page bootstrapping, sidebar and session patterns, and dashboard-specific validation rules. It does not own FastAPI APIs, Command Center workspace documents, or release orchestration semantics.",
+      "sdk_package": "mainsequence",
+      "sdk_version": "4.4.5",
+      "installed_bundle_package": "agent_scaffold",
+      "installed_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/.venv/lib/python3.14/site-packages/agent_scaffold/skills/dashboards/streamlit/SKILL.md",
+      "copied_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/skills/dashboards/streamlit/source/SKILL.md",
+      "source_of_truth_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/source-of-truth.yaml",
+      "upstream_git": {
+        "repository": "https://github.com/mainsequence-sdk/mainsequence-sdk",
+        "ref": "refs/tags/v4.4.5",
+        "tag": "v4.4.5",
+        "commit": "3b5a20a344cec0c960351dc3c601d32a66a8b46e",
+        "verification_status": "verified",
+        "verification": {
+          "method": "github-api",
+          "checked_at": "2026-06-14",
+          "ref_url": "https://api.github.com/repos/mainsequence-sdk/mainsequence-sdk/git/ref/tags/v4.4.5",
+          "rejected_refs": [
+            "refs/tags/4.4.5"
+          ]
+        }
+      }
+    },
+    {
+      "skill_path": "data_access/exploration",
+      "display_name": "mainsequence-data-exploration",
+      "description": "Use this skill when the task is to discover what `DataNode` or `MetaTable` data already exists on the Main Sequence platform before implementation starts.",
+      "sdk_package": "mainsequence",
+      "sdk_version": "4.4.5",
+      "installed_bundle_package": "agent_scaffold",
+      "installed_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/.venv/lib/python3.14/site-packages/agent_scaffold/skills/data_access/exploration/SKILL.md",
+      "copied_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/skills/data_access/exploration/source/SKILL.md",
+      "source_of_truth_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/source-of-truth.yaml",
+      "upstream_git": {
+        "repository": "https://github.com/mainsequence-sdk/mainsequence-sdk",
+        "ref": "refs/tags/v4.4.5",
+        "tag": "v4.4.5",
+        "commit": "3b5a20a344cec0c960351dc3c601d32a66a8b46e",
+        "verification_status": "verified",
+        "verification": {
+          "method": "github-api",
+          "checked_at": "2026-06-14",
+          "ref_url": "https://api.github.com/repos/mainsequence-sdk/mainsequence-sdk/git/ref/tags/v4.4.5",
+          "rejected_refs": [
+            "refs/tags/4.4.5"
+          ]
+        }
+      }
+    },
+    {
+      "skill_path": "data_publishing/data_nodes",
+      "display_name": "mainsequence-data-nodes",
+      "description": "Use this skill when the task is about producing, changing, validating, or reviewing Main Sequence DataNode update processes. This skill owns DataNode update configuration, dependencies, update logic, hashing, namespaces, and validation against a PlatformTimeIndexMetaTable storage contract. It does not own generic MetaTable governance, Alembic migration execution, API route contracts, scheduling, sharing policy, or storage registration internals.",
+      "sdk_package": "mainsequence",
+      "sdk_version": "4.4.5",
+      "installed_bundle_package": "agent_scaffold",
+      "installed_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/.venv/lib/python3.14/site-packages/agent_scaffold/skills/data_publishing/data_nodes/SKILL.md",
+      "copied_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/skills/data_publishing/data_nodes/source/SKILL.md",
+      "source_of_truth_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/source-of-truth.yaml",
+      "upstream_git": {
+        "repository": "https://github.com/mainsequence-sdk/mainsequence-sdk",
+        "ref": "refs/tags/v4.4.5",
+        "tag": "v4.4.5",
+        "commit": "3b5a20a344cec0c960351dc3c601d32a66a8b46e",
+        "verification_status": "verified",
+        "verification": {
+          "method": "github-api",
+          "checked_at": "2026-06-14",
+          "ref_url": "https://api.github.com/repos/mainsequence-sdk/mainsequence-sdk/git/ref/tags/v4.4.5",
+          "rejected_refs": [
+            "refs/tags/4.4.5"
+          ]
+        }
+      }
+    },
+    {
+      "skill_path": "data_publishing/meta_table_migrations",
+      "display_name": "mainsequence-metatable-migrations",
+      "description": "Use this skill when the task is about Main Sequence MetaTable schema evolution, Alembic provider setup, migration scaffold generation, revision creation, migration upgrade/current commands, provider-scoped MetaTable reservation/finalization, or debugging migration lifecycle failures. This skill owns the migration-first workflow for platform-managed MetaTables and should be used instead of direct MetaTable.register() guidance.",
+      "sdk_package": "mainsequence",
+      "sdk_version": "4.4.5",
+      "installed_bundle_package": "agent_scaffold",
+      "installed_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/.venv/lib/python3.14/site-packages/agent_scaffold/skills/data_publishing/meta_table_migrations/SKILL.md",
+      "copied_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/skills/data_publishing/meta_table_migrations/source/SKILL.md",
+      "source_of_truth_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/source-of-truth.yaml",
+      "upstream_git": {
+        "repository": "https://github.com/mainsequence-sdk/mainsequence-sdk",
+        "ref": "refs/tags/v4.4.5",
+        "tag": "v4.4.5",
+        "commit": "3b5a20a344cec0c960351dc3c601d32a66a8b46e",
+        "verification_status": "verified",
+        "verification": {
+          "method": "github-api",
+          "checked_at": "2026-06-14",
+          "ref_url": "https://api.github.com/repos/mainsequence-sdk/mainsequence-sdk/git/ref/tags/v4.4.5",
+          "rejected_refs": [
+            "refs/tags/4.4.5"
+          ]
+        }
+      }
+    },
+    {
+      "skill_path": "data_publishing/meta_tables",
+      "display_name": "mainsequence-meta-tables",
+      "description": "Use this skill when the task is about defining, querying, or reviewing Main Sequence MetaTables. This skill owns SQLAlchemy table contracts, backend-managed table authoring, external table registration, governed compiled SQL operations, foreign keys, indexes, naming, cadence, and validation rules. For Alembic migration lifecycle work, use the mainsequence-metatable-migrations skill. It does not own DataNode producers, API route contracts, scheduling, releases, or sharing policy.",
+      "sdk_package": "mainsequence",
+      "sdk_version": "4.4.5",
+      "installed_bundle_package": "agent_scaffold",
+      "installed_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/.venv/lib/python3.14/site-packages/agent_scaffold/skills/data_publishing/meta_tables/SKILL.md",
+      "copied_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/skills/data_publishing/meta_tables/source/SKILL.md",
+      "source_of_truth_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/source-of-truth.yaml",
+      "upstream_git": {
+        "repository": "https://github.com/mainsequence-sdk/mainsequence-sdk",
+        "ref": "refs/tags/v4.4.5",
+        "tag": "v4.4.5",
+        "commit": "3b5a20a344cec0c960351dc3c601d32a66a8b46e",
+        "verification_status": "verified",
+        "verification": {
+          "method": "github-api",
+          "checked_at": "2026-06-14",
+          "ref_url": "https://api.github.com/repos/mainsequence-sdk/mainsequence-sdk/git/ref/tags/v4.4.5",
+          "rejected_refs": [
+            "refs/tags/4.4.5"
+          ]
+        }
+      }
+    },
+    {
+      "skill_path": "maintenance/bug_auditor",
+      "display_name": "doc-bug-auditor",
+      "description": "Reviews a Main Sequence project for status, blockers, failures, and completion.",
+      "sdk_package": "mainsequence",
+      "sdk_version": "4.4.5",
+      "installed_bundle_package": "agent_scaffold",
+      "installed_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/.venv/lib/python3.14/site-packages/agent_scaffold/skills/maintenance/bug_auditor/SKILL.md",
+      "copied_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/skills/maintenance/bug_auditor/source/SKILL.md",
+      "source_of_truth_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/source-of-truth.yaml",
+      "upstream_git": {
+        "repository": "https://github.com/mainsequence-sdk/mainsequence-sdk",
+        "ref": "refs/tags/v4.4.5",
+        "tag": "v4.4.5",
+        "commit": "3b5a20a344cec0c960351dc3c601d32a66a8b46e",
+        "verification_status": "verified",
+        "verification": {
+          "method": "github-api",
+          "checked_at": "2026-06-14",
+          "ref_url": "https://api.github.com/repos/mainsequence-sdk/mainsequence-sdk/git/ref/tags/v4.4.5",
+          "rejected_refs": [
+            "refs/tags/4.4.5"
+          ]
+        }
+      }
+    },
+    {
+      "skill_path": "ms-markets",
+      "display_name": "mainsequence-ms-markets",
+      "description": "Use this skill when a Main Sequence project needs financial markets functionality. This skill points agents to the supported ms-markets library and its packaged skills instead of duplicating market-domain instructions in the SDK scaffold.",
+      "sdk_package": "mainsequence",
+      "sdk_version": "4.4.5",
+      "installed_bundle_package": "agent_scaffold",
+      "installed_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/.venv/lib/python3.14/site-packages/agent_scaffold/skills/ms-markets/SKILL.md",
+      "copied_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/skills/ms-markets/source/SKILL.md",
+      "source_of_truth_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/source-of-truth.yaml",
+      "upstream_git": {
+        "repository": "https://github.com/mainsequence-sdk/mainsequence-sdk",
+        "ref": "refs/tags/v4.4.5",
+        "tag": "v4.4.5",
+        "commit": "3b5a20a344cec0c960351dc3c601d32a66a8b46e",
+        "verification_status": "verified",
+        "verification": {
+          "method": "github-api",
+          "checked_at": "2026-06-14",
+          "ref_url": "https://api.github.com/repos/mainsequence-sdk/mainsequence-sdk/git/ref/tags/v4.4.5",
+          "rejected_refs": [
+            "refs/tags/4.4.5"
+          ]
+        }
+      }
+    },
+    {
+      "skill_path": "platform_operations/access_control_and_sharing",
+      "display_name": "mainsequence-access-control-and-sharing",
+      "description": "Use this skill when the task is about RBAC, resource sharing, or access verification in a Main Sequence project. This skill owns organization and team access concepts, view and edit semantics, choosing the correct shareable resource boundary, and access checks across projects, DataNodeStorage, constants, secrets, buckets, artifacts, and releases. It does not own job scheduling, DataNode producer logic, or API route design.",
+      "sdk_package": "mainsequence",
+      "sdk_version": "4.4.5",
+      "installed_bundle_package": "agent_scaffold",
+      "installed_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/.venv/lib/python3.14/site-packages/agent_scaffold/skills/platform_operations/access_control_and_sharing/SKILL.md",
+      "copied_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/skills/platform_operations/access_control_and_sharing/source/SKILL.md",
+      "source_of_truth_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/source-of-truth.yaml",
+      "upstream_git": {
+        "repository": "https://github.com/mainsequence-sdk/mainsequence-sdk",
+        "ref": "refs/tags/v4.4.5",
+        "tag": "v4.4.5",
+        "commit": "3b5a20a344cec0c960351dc3c601d32a66a8b46e",
+        "verification_status": "verified",
+        "verification": {
+          "method": "github-api",
+          "checked_at": "2026-06-14",
+          "ref_url": "https://api.github.com/repos/mainsequence-sdk/mainsequence-sdk/git/ref/tags/v4.4.5",
+          "rejected_refs": [
+            "refs/tags/4.4.5"
+          ]
+        }
+      }
+    },
+    {
+      "skill_path": "platform_operations/orchestration_and_releases",
+      "display_name": "mainsequence-orchestration-and-releases",
+      "description": "Use this skill when the task is about operational execution in a Main Sequence project. This skill owns jobs, schedules, batch scheduling files, project images, run inspection, project resources, releases, and Artifacts as operational inputs. It does not own DataNode producer design, MetaTable schema design, API route contracts, or RBAC policy.",
+      "sdk_package": "mainsequence",
+      "sdk_version": "4.4.5",
+      "installed_bundle_package": "agent_scaffold",
+      "installed_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/.venv/lib/python3.14/site-packages/agent_scaffold/skills/platform_operations/orchestration_and_releases/SKILL.md",
+      "copied_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/skills/platform_operations/orchestration_and_releases/source/SKILL.md",
+      "source_of_truth_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/source-of-truth.yaml",
+      "upstream_git": {
+        "repository": "https://github.com/mainsequence-sdk/mainsequence-sdk",
+        "ref": "refs/tags/v4.4.5",
+        "tag": "v4.4.5",
+        "commit": "3b5a20a344cec0c960351dc3c601d32a66a8b46e",
+        "verification_status": "verified",
+        "verification": {
+          "method": "github-api",
+          "checked_at": "2026-06-14",
+          "ref_url": "https://api.github.com/repos/mainsequence-sdk/mainsequence-sdk/git/ref/tags/v4.4.5",
+          "rejected_refs": [
+            "refs/tags/4.4.5"
+          ]
+        }
+      }
+    },
+    {
+      "skill_path": "project_builder",
+      "display_name": "mainsequence-project",
+      "description": "Use this skill to bootstrap work in a Main Sequence repository. This skill owns project context verification, docs-first behavior, success-definition discipline, and routing between specialized domain skills and the maintenance skill. It does not own domain implementation semantics or direct reconciliation of the project-state files under `.agents/`.",
+      "sdk_package": "mainsequence",
+      "sdk_version": "4.4.5",
+      "installed_bundle_package": "agent_scaffold",
+      "installed_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/.venv/lib/python3.14/site-packages/agent_scaffold/skills/project_builder/SKILL.md",
+      "copied_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/skills/project_builder/source/SKILL.md",
+      "source_of_truth_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/source-of-truth.yaml",
+      "upstream_git": {
+        "repository": "https://github.com/mainsequence-sdk/mainsequence-sdk",
+        "ref": "refs/tags/v4.4.5",
+        "tag": "v4.4.5",
+        "commit": "3b5a20a344cec0c960351dc3c601d32a66a8b46e",
+        "verification_status": "verified",
+        "verification": {
+          "method": "github-api",
+          "checked_at": "2026-06-14",
+          "ref_url": "https://api.github.com/repos/mainsequence-sdk/mainsequence-sdk/git/ref/tags/v4.4.5",
+          "rejected_refs": [
+            "refs/tags/4.4.5"
+          ]
+        }
+      }
+    },
+    {
+      "skill_path": "project_to_agent",
+      "display_name": "mainsequence-project-to-agent",
+      "description": "Use this skill when the task is about adding agentic capabilities to a Main Sequence project.",
+      "sdk_package": "mainsequence",
+      "sdk_version": "4.4.5",
+      "installed_bundle_package": "agent_scaffold",
+      "installed_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/.venv/lib/python3.14/site-packages/agent_scaffold/skills/project_to_agent/SKILL.md",
+      "copied_skill_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/skills/project_to_agent/source/SKILL.md",
+      "source_of_truth_file": "/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/sdk/4.4.5/source-of-truth.yaml",
+      "upstream_git": {
+        "repository": "https://github.com/mainsequence-sdk/mainsequence-sdk",
+        "ref": "refs/tags/v4.4.5",
+        "tag": "v4.4.5",
+        "commit": "3b5a20a344cec0c960351dc3c601d32a66a8b46e",
+        "verification_status": "verified",
+        "verification": {
+          "method": "github-api",
+          "checked_at": "2026-06-14",
+          "ref_url": "https://api.github.com/repos/mainsequence-sdk/mainsequence-sdk/git/ref/tags/v4.4.5",
+          "rejected_refs": [
+            "refs/tags/4.4.5"
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+passing_score: 0.9
+hard_fail_checks:
+- id: new-revision-required
+  description: Must require a new Alembic revision instead of editing applied migration history.
+- id: no-runtime-register
+  description: Must reject calling platform-managed model `.register()` at app startup.
+- id: provider-cli
+  description: Must use `mainsequence migrations ... --provider risk_app.migrations:migration` commands.
+criteria:
+- id: model-change
+  weight: 0.15
+  description: Updates SQLAlchemy model with nullable columns, metadata, and status lookup index.
+- id: current-revision-upgrade
+  weight: 0.25
+  description: Includes current, revision, revision review, and upgrade steps.
+- id: finalization
+  weight: 0.2
+  description: Verifies Alembic SQL execution and provider-scoped catalog finalization.
+- id: immutable-history
+  weight: 0.15
+  description: Explains why applied migration files must not be edited.
+- id: runtime-boundary
+  weight: 0.15
+  description: Keeps runtime attach-only and rejects schema creation/registration at startup.
+- id: non-goals
+  weight: 0.1
+  description: Rejects backend request payloads, data-source UID threading, and success claims without verification.

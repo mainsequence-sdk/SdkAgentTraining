@@ -8,6 +8,7 @@ import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SKILL_PATH = "platform_operations/orchestration_and_releases"
+CASE_SET_VERSION = "v2"
 
 
 def write_text(path: Path, content: str) -> None:
@@ -89,7 +90,7 @@ Weak answers should be rejected if they:
         "id": case_id,
         "title": title,
         "skill_path": SKILL_PATH,
-        "case_set_version": "v1",
+        "case_set_version": CASE_SET_VERSION,
         "authored_against_sdk_version": sdk_version(),
         "tags": tags,
         "difficulty": difficulty,
@@ -163,7 +164,7 @@ Keep the answer grounded in documented Main Sequence behavior."""
         "id": case_id,
         "title": title,
         "skill_path": SKILL_PATH,
-        "case_set_version": "v1",
+        "case_set_version": CASE_SET_VERSION,
         "authored_against_sdk_version": sdk_version(),
         "tags": tags,
         "difficulty": difficulty,
@@ -242,7 +243,7 @@ It should also make these points explicit:
         "id": case_id,
         "title": title,
         "skill_path": SKILL_PATH,
-        "case_set_version": "v1",
+        "case_set_version": CASE_SET_VERSION,
         "authored_against_sdk_version": sdk_version(),
         "tags": tags,
         "difficulty": difficulty,
@@ -266,7 +267,7 @@ def target_root() -> Path:
     return (
         REPO_ROOT
         / "cases"
-        / "v1"
+        / CASE_SET_VERSION
         / "skills"
         / "platform_operations"
         / "orchestration_and_releases"

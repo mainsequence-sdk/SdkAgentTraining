@@ -1,0 +1,12 @@
+skill_path: data_publishing/meta_table_migrations
+case_set_version: v2
+target_sdk_version: 4.4.5
+source_sdk_skill: sdk/4.4.5/skills/data_publishing/meta_table_migrations/source/SKILL.md
+display_name: mainsequence-metatable-migrations
+description: Use this skill when the task is about Main Sequence MetaTable schema
+  evolution, Alembic provider setup, migration scaffold generation, revision creation,
+  migration upgrade/current commands, provider-scoped MetaTable reservation/finalization,
+  or debugging migration lifecycle failures. This skill owns the migration-first workflow
+  for platform-managed MetaTables and should be used instead of direct MetaTable.register()
+  guidance.
+migration_status: pending_revalidation

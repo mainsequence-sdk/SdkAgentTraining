@@ -1,0 +1,29 @@
+passing_score: 0.9
+hard_fail_checks:
+- id: dynamic-storage-identity
+  description: Must derive storage identity from source UID, source cadence, upsample frequency, and interpolation rule.
+- id: explicit-dependency
+  description: Must expose the source price node as an explicit dependency, not create it hidden inside `update()`.
+- id: row-column-boundary
+  description: Must keep storage identity policy out of row columns unless it is real observation data.
+- id: dataframe-contract
+  description: Must require `time_index` first with exact `datetime64[ns, UTC]` and no duplicate identity rows.
+criteria:
+- id: storage-contract
+  weight: 0.25
+  description: Defines PlatformTimeIndexMetaTable shape, cadence, asset FK, columns, and metadata.
+- id: config-contract
+  weight: 0.2
+  description: Defines update-scoped config, source selection validation, and hash-relevant policy fields.
+- id: dependency-and-incremental
+  weight: 0.2
+  description: Uses deterministic dependencies and UpdateStatistics/asset-scoped source windows.
+- id: migration-path
+  weight: 0.15
+  description: Explains dynamic storage migration/provider inclusion before execution.
+- id: failure-modes
+  weight: 0.1
+  description: Fails clearly when source storage UID or cadence is unavailable.
+- id: non-goals
+  weight: 0.1
+  description: Rejects arbitrary storage overrides, hidden dependencies, ticker identity, full-history reads, and `test_node`.

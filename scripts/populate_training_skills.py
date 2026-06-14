@@ -23,6 +23,24 @@ def installed_sdk_version() -> str:
         ) from exc
 
 
+def distribution_project_urls(package_name: str) -> dict[str, str]:
+    try:
+        metadata = importlib.metadata.metadata(package_name)
+    except importlib.metadata.PackageNotFoundError:
+        return {}
+
+    project_urls: dict[str, str] = {}
+    for raw_value in metadata.get_all("Project-URL") or []:
+        label, separator, url = raw_value.partition(",")
+        if separator:
+            project_urls[label.strip()] = url.strip()
+
+    homepage = metadata.get("Home-page")
+    if homepage and "Homepage" not in project_urls:
+        project_urls["Homepage"] = homepage.strip()
+    return project_urls
+
+
 def installed_bundle_dir() -> Path:
     try:
         module = importlib.import_module(BUNDLE_PACKAGE)
@@ -49,7 +67,15 @@ def parse_frontmatter(skill_file: Path) -> dict:
     for idx in range(1, len(lines)):
         if lines[idx].strip() == "---":
             block = "\n".join(lines[1:idx]).strip()
-            return yaml.safe_load(block) or {}
+            try:
+                parsed = yaml.safe_load(block) or {}
+            except yaml.YAMLError:
+                parsed = {}
+                for line in block.splitlines():
+                    key, separator, value = line.partition(":")
+                    if separator and key.strip() in {"name", "description"}:
+                        parsed[key.strip()] = value.strip().strip("\"'")
+            return parsed
     return {}
 
 
@@ -68,6 +94,49 @@ def load_case_map(path: Path, sdk_version: str) -> dict:
     }
 
 
+def default_source_of_truth(sdk_version: str, bundle_dir: Path) -> dict:
+    project_urls = distribution_project_urls(PACKAGE_NAME)
+    repository = project_urls.get("Homepage")
+    git_ref = f"refs/tags/v{sdk_version}"
+    return {
+        "sdk_package": PACKAGE_NAME,
+        "sdk_version": sdk_version,
+        "bundle_package": BUNDLE_PACKAGE,
+        "distribution": {
+            "source": "installed-python-package",
+            "project_urls": project_urls,
+        },
+        "upstream_git": {
+            "repository": repository,
+            "ref": git_ref,
+            "tag": f"v{sdk_version}",
+            "commit": None,
+            "verification_status": "unverified",
+            "verification_notes": [
+                "Generated from installed package metadata. Verify the public git ref "
+                "and commit before treating this snapshot as auditable source truth."
+            ],
+        },
+        "evaluated_snapshot": {
+            "snapshot_root": f"sdk/{sdk_version}",
+            "bundle_dir": str(bundle_dir),
+            "agents_file": f"sdk/{sdk_version}/agent_scaffold/AGENTS.md",
+            "skills_root": f"sdk/{sdk_version}/skills",
+            "generator": "scripts/populate_training_skills.py",
+        },
+    }
+
+
+def load_or_create_source_of_truth(version_root: Path, sdk_version: str, bundle_dir: Path) -> dict:
+    path = version_root / "source-of-truth.yaml"
+    if path.exists():
+        return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+
+    payload = default_source_of_truth(sdk_version, bundle_dir)
+    write_yaml(path, payload)
+    return payload
+
+
 def main() -> int:
     sdk_version = installed_sdk_version()
     bundle_dir = installed_bundle_dir()
@@ -79,6 +148,7 @@ def main() -> int:
     skills_output_root = version_root / "skills"
     version_root.mkdir(parents=True, exist_ok=True)
     skills_output_root.mkdir(parents=True, exist_ok=True)
+    source_of_truth = load_or_create_source_of_truth(version_root, sdk_version, bundle_dir)
 
     agents_path = bundle_dir / "AGENTS.md"
     if agents_path.exists():
@@ -107,6 +177,8 @@ def main() -> int:
             "installed_bundle_package": BUNDLE_PACKAGE,
             "installed_skill_file": str(skill_file),
             "copied_skill_file": str(snapshot_skill_file),
+            "source_of_truth_file": str(version_root / "source-of-truth.yaml"),
+            "upstream_git": source_of_truth.get("upstream_git", {}),
         }
         write_yaml(skill_root / "skill.yaml", skill_record)
 
@@ -117,6 +189,8 @@ def main() -> int:
         "sdk_version": sdk_version,
         "bundle_package": BUNDLE_PACKAGE,
         "bundle_dir": str(bundle_dir),
+        "source_of_truth_file": str(version_root / "source-of-truth.yaml"),
+        "source_of_truth": source_of_truth,
         "skills_count": len(catalog),
         "skills": catalog,
     }
@@ -142,6 +216,7 @@ def main() -> int:
         case_map_path,
         {
             "sdk_version": sdk_version,
+            "source_of_truth_file": "source-of-truth.yaml",
             "default_case_set": default_case_set,
             "skills": merged_skills,
         },

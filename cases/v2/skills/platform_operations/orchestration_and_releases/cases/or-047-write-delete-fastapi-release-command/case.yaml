@@ -1,0 +1,27 @@
+id: or-047-write-delete-fastapi-release-command
+title: Author the FastAPI release delete command
+skill_path: platform_operations/orchestration_and_releases
+case_set_version: v2
+authored_against_sdk_version: 3.17.33
+tags:
+- cli
+- resources
+- releases
+- fastapi
+- delete
+- authoring
+difficulty: medium
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+- Uses `delete_fastapi`
+- Includes the release id
+- Includes `--yes` to skip confirmation
+source_docs:
+- docs/cli/index.md
+- docs/tutorial/create_your_first_api.md
+target_sdk_version: 4.4.5
+migrated_from_case_set: v1
+migration_status: pending_revalidation
