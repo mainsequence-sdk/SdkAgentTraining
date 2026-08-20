@@ -1,118 +1,80 @@
-# Folder Structure
+# Repository Structure
 
-This repository is organized around two independent version axes:
+## Library source
 
-- case-set version
-- SDK version
-
-That separation is intentional.
-
-## Top Level
-
-- `cases/`
-  Authored prompts, rubrics, and expected outputs.
-- `sdk/`
-  Copied snapshots of installed SDK skill source.
-- `docs/`
-  Repository documentation.
-- `reports/`
-  Derived summaries and leaderboards.
-- `runs/`
-  Outputs from actual agent/model executions.
-- `scripts/`
-  Local utilities for populating SDK snapshots and running evaluations.
-
-## `cases/`
-
-- `cases/general/`
-  Optional bucket for prompts not owned by one skill.
-- `cases/v1/`
-  First authored case-set version.
-- `cases/v2/`
-  SDK 4.x case-set track, created after the `mainsequence==4.4.5` skill-bundle change.
-
-## `cases/<case-set-version>/`
-
-- `manifest.yaml`
-  Metadata for the authored case-set version.
-- `skills/`
-  One folder per skill path with reusable authored cases.
-
-## `cases/<case-set-version>/skills/<skill-path>/`
-
-- `README.md`
-  Human explanation for the authored case bank for that skill.
-- `skill.yaml`
-  Case-set metadata for that skill.
-- `cases/`
-  The actual reusable authored cases.
-
-## `sdk/<sdk-version>/`
-
-- `manifest.json`
-  Inventory of the copied installed SDK bundle.
-- `source-of-truth.yaml`
-  Auditable upstream source reference for the copied SDK snapshot. This records
-  the public git repository, tag/ref, commit, verification status, and the local
-  snapshot path being evaluated.
-- `case-map.yaml`
-  Declares which case-set version each skill should use for this SDK version.
-- `agent_scaffold/AGENTS.md`
-  Copied top-level scaffold instructions from the installed package.
-- `skills/`
-  One folder per copied installed skill path.
-
-## `sdk/<sdk-version>/skills/<skill-path>/`
-
-- `README.md`
-  Human explanation for the SDK snapshot folder.
-- `skill.yaml`
-  Snapshot metadata for that copied skill.
-- `source/SKILL.md`
-  Exact copied skill instructions from the installed package.
-
-## Case Skill Folder vs SDK Skill Folder
-
-The folder names intentionally mirror each other:
+`src/ms_agent_eval/` is the single installable Python library:
 
 ```text
-cases/<case-set-version>/skills/<skill-path>/
-sdk/<sdk-version>/skills/<skill-path>/
+core/                    neutral schemas, planning, storage, execution, and plugin loading
+programs/raw/            exact prompt rendering
+programs/dspy/           optional DSPy programs and governed optimization
+providers/ollama/        Ollama transport and bindings
 ```
 
-They do not mean the same thing.
+The wheel contains no target-specific evaluator, evaluated-repository code, or
+MainSequence dependency. Trusted evaluator code is selected explicitly from an
+experiment workspace; a composite hash of its profile, module, and calibration
+tree is included in every experiment lock.
 
-- `cases/<case-set-version>/skills/<skill-path>/`
-  Contains authored evaluation material: case-bank README, prompts, expected answers, rubrics, and expected artifacts.
-- `sdk/<sdk-version>/skills/<skill-path>/`
-  Contains copied SDK material: snapshot metadata and `source/SKILL.md`.
+## Experiment workspaces
 
-The case folder should not contain a copy of `SKILL.md`. The SDK skill source is selected by `sdk/<sdk-version>/case-map.yaml` and injected by the runner when a case executes.
+Each directory under `experiments/` is self-contained:
 
-The upstream source of truth is selected by `sdk/<sdk-version>/source-of-truth.yaml`.
-This file is version-level metadata. Individual cases should reference copied
-SDK skill paths through `supporting_context`. Implementation-derived cases
-should use `case_source_of_truth` for the evaluated repository, package version,
-ref, files, and symbols.
+```text
+workspace.yaml
+.env.example              committed template for machine-local external storage
+targets/                 GitHub URL/ref and exact instruction locators
+snapshots/               compact immutable source locks
+sources/                 authored source notes; never repository clones
+suites/
+  <version>/
+    suite.yaml            case index
+    split.json            grouped train/development/test/challenge assignments
+    units/<unit>/cases/   authored cases, expected answers, and rubrics
+compatibility/            exact snapshot/suite/bundle/unit mappings
+programs/                 raw or DSPy program specifications
+providers/                credential-free provider profiles
+runtimes/                 response-only or digest-pinned Docker profiles
+evaluators/
+  <evaluator>/
+    evaluator.yaml        trusted module, factory, and calibration configuration
+    plugin.py             target-specific evaluator implementation
+    calibration/          positive, negative, and adversarial fixtures
+optimizers/               DSPy optimizer profiles and hard budgets
+storage/                  environment-rooted external backends
+plans/                    benchmark or optimization matrices
+```
 
-## `runs/sdk/<sdk-version>/<agent>/<model>/<timestamp>/`
+An instruction root is exactly what the target declares. `.agents/skills`,
+`agent_scaffold/skills`, explicit files, and multiple prefixed roots are all
+supported; none is probed implicitly.
 
-- `manifest.json`
-  Metadata for one run.
-- `skills/`
-  Skill-specific outputs for that run.
-- `evaluations/`
-  Scores and rubric results.
-- `logs/`
-  Raw request/response and execution logs.
+## External data plane
 
-## Why This Structure Is Better
+`MS_AGENT_EVAL_DATA_ROOT` points outside the Git workspace and owns all generated
+state:
 
-With this structure:
+```text
+blobs/sha256/             immutable content-addressed bytes
+manifests/                locks, results, evaluations, reports, and legacy indexes
+metadata/                 SQLite lifecycle and artifact-reference metadata
+snapshots/                safely extracted immutable repository snapshots
+tmp/                      atomic-write staging
+```
 
-- adding `sdk/3.17.39/` does not force copying `cases/v1/`
-- a skill can keep using `v1` for several SDK versions
-- only the mapping file changes when compatibility changes but the authored case bank does not
-- a major SDK skill-bundle change can move the new SDK map to `v2` while preserving `v1` history
+Each target executes in its own Docker mount and dependency environment. Trusted
+evaluators consume read-only evidence; evaluated repository code is never
+imported into the host process.
 
-That keeps the repo smaller and makes SDK drift explicit instead of hidden in duplicate folders.
+## Repository root
+
+```text
+.agents/                  repository-local authoring workflows
+src/                      the installable generic library
+experiments/              committed workspaces and authored suites
+tests/                    generic tests and narrow regression fixtures
+docs/                     architecture and implementation records
+```
+
+There are no root-level cases, snapshots, runtime profiles, runs, reports,
+packages, SDK copies, or spike environments.

@@ -1,151 +1,217 @@
-# SDK Agent Training
+# MS Agent Eval
 
-This repository stores authored evaluation cases, SDK snapshots, and recorded runs for testing the `agent_scaffold` skills bundled with the public `mainsequence` library.
+MS Agent Eval is a Python 3.12+ library for reproducible evaluation and
+optimization of prompts/instruction bundles from arbitrary GitHub repositories.
+The evaluated repository is configuration, not a framework dependency.
 
-The structure separates three concerns:
+The repository contains two kinds of version-controlled material:
 
-- `cases/`: authored case sets, versioned independently from the SDK
-- `sdk/`: copied snapshots of the installed `mainsequence` / `agent_scaffold` bundle
-- `runs/`: model outputs grouped by SDK version, agent, and model
+- the reusable `ms_agent_eval` library under `src/`;
+- first-party experiment workspaces under `experiments/`.
 
-## Layout
+Clones, extracted snapshots, model responses, evaluations, compiled DSPy state,
+container evidence, reports, and metadata databases live under a configured
+external data root and must not be committed here.
 
-```text
-SdkAgentTraining/
-├── cases/
-│   ├── general/
-│   ├── v1/
-│   └── v2/
-│       ├── manifest.yaml
-│       └── skills/
-│           └── <skill-path>/
-│               ├── README.md
-│               ├── skill.yaml
-│               └── cases/
-│                   └── <case-id>/
-├── sdk/
-│   └── <sdk-version>/
-│       ├── manifest.json
-│       ├── source-of-truth.yaml
-│       ├── case-map.yaml
-│       ├── agent_scaffold/
-│       │   └── AGENTS.md
-│       └── skills/
-│           └── <skill-path>/
-│               ├── README.md
-│               ├── skill.yaml
-│               └── source/
-│                   └── SKILL.md
-├── docs/
-├── reports/
-├── runs/
-│   └── sdk/<sdk-version>/<agent>/<model>/<timestamp>/
-└── scripts/
-```
-
-## Folder Purpose
-
-- `cases/general/`
-  Optional cross-cutting prompts not owned by one skill.
-- `cases/v1/`
-  The first authored case-set version, built for the SDK 3.x skill bundle.
-- `cases/v2/`
-  The SDK 4.x case-set track. It starts from compatible `v1` cases where skill paths still exist and must be revalidated against the `4.4.5` skill text.
-- `cases/v1/skills/<skill-path>/cases/`
-  The actual reusable prompt cases.
-- `sdk/<sdk-version>/`
-  Snapshot of the installed SDK bundle for one library version.
-- `sdk/<sdk-version>/case-map.yaml`
-  Compatibility map from SDK skill path to authored case-set version.
-- `sdk/<sdk-version>/source-of-truth.yaml`
-  Auditable source reference for the copied SDK snapshot, including the public
-  git repository, tag/ref, and commit when verified.
-- `sdk/<sdk-version>/skills/<skill-path>/source/SKILL.md`
-  Exact copied skill text from the installed library.
-- `runs/sdk/<sdk-version>/<agent>/<model>/<timestamp>/`
-  One concrete execution run for one SDK version, agent, and model.
-
-## Case Skill Folders vs SDK Skill Folders
-
-The same `<skill-path>` appears under both `cases/` and `sdk/`, but the folders have different owners.
-
-- `cases/<case-set-version>/skills/<skill-path>/`
-  Authored evaluation material for that skill: case-bank README, case metadata, prompts, expected answers, rubrics, and expected artifacts.
-- `sdk/<sdk-version>/skills/<skill-path>/`
-  Copied library material for that SDK version: snapshot metadata and the exact installed `source/SKILL.md`.
-
-Do not put `SKILL.md` inside `cases/<case-set-version>/skills/<skill-path>/`. A case set is reusable across SDK versions, while `SKILL.md` belongs to one SDK version.
-
-At run time the runner combines both sides:
+## Architecture
 
 ```text
-system context = sdk/<sdk-version>/agent_scaffold/AGENTS.md
-               + sdk/<sdk-version>/skills/<skill-path>/source/SKILL.md
-
-case prompt    = cases/<case-set-version>/skills/<skill-path>/cases/<case-id>/prompt.md
+GitHub URL + tag/commit
+          │ resolve tag to immutable commit
+          ▼
+external content-addressed snapshot
+          │ exact configured AGENTS/skill paths
+          ▼
+suite + compatibility + grouped split + program/provider/runtime
+          │ immutable experiment lock
+          ▼
+raw or DSPy model program ── optional isolated Docker target execution
+          │ rendered-call evidence
+          ▼
+calibrated exact-name evaluator
+          │
+          ├── external benchmark/report artifacts
+          └── DSPy metric projection for a separate optimization experiment
 ```
 
-The link between those two sides is `sdk/<sdk-version>/case-map.yaml`.
+DSPy is canonical for newly authored declarative model programs. The raw engine
+remains first-class for exact prompt replay and causal controls. Optimization is
+never an implicit benchmark step: it sees only train/development data, publishes
+a state-only JSON candidate, and is validated on untouched test/challenge data
+before explicit promotion.
 
-The git source of truth for the SDK snapshot is recorded once at
-`sdk/<sdk-version>/source-of-truth.yaml`. Cases should cite copied SDK skill
-paths and planning docs through `supporting_context`; implementation-derived
-cases should put the evaluated repository, package version, ref, files, and
-symbols under `case_source_of_truth`.
+## Library modules
 
-## Why This Split Exists
+- `ms_agent_eval.core`: neutral schemas, planning, sources, snapshots, storage,
+  lifecycle, Docker execution, evaluation, legacy export, and reporting.
+- `ms_agent_eval.programs.raw`: exact configurable system/user rendering.
+- `ms_agent_eval.programs.dspy`: typed DSPy program, observed LM, authoritative
+  metric adapter, budgets, protected splits, compilation, and promotion.
+- `ms_agent_eval.providers.ollama`: optional Ollama raw/DSPy bindings.
+- `ms_agent_eval.core.evaluator_plugins`: explicit loading of trusted evaluator
+  code owned by an experiment workspace.
 
-The authored case bank should not be duplicated every time the SDK changes.
+The Main Sequence experiment workspace is only a proof target. Its evaluator is
+under `experiments/mainsequence-sdk/evaluators/`, outside the installed library.
+Another repository can provide its own GitHub source, exact instruction roots,
+suites, programs, providers, evaluators, and runtimes without changing library
+code.
 
-The intended workflow is:
+## Repository Layout
 
-1. keep authored cases under `cases/<case-set-version>/...`
-2. snapshot each installed SDK under `sdk/<version>/...`
-3. record the upstream git source in `sdk/<version>/source-of-truth.yaml`
-4. declare compatibility in `sdk/<version>/case-map.yaml`
+```text
+.agents/                     repository-local authoring workflows
+src/ms_agent_eval/           one installable library
+experiments/mainsequence-sdk version-controlled experiment workspace
+tests/                       unit, integration, fixtures, and acceptance tests
+docs/                        architecture and implementation records
+```
 
-That means a small SDK change usually requires:
-
-- a new SDK snapshot
-- maybe an updated compatibility map
-
-and not a full duplicate of the authored case bank.
+See [structure.md](/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/docs/structure.md)
+and [conventions.md](/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/docs/conventions.md).
+For the fastest runnable workflow, start with
+[Getting started](/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/docs/getting-started.md)
+or browse the [documentation index](/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/docs/index.md).
 
 ## Setup
 
+The baseline interpreter is CPython 3.12. `.python-version` pins that baseline.
+
 ```bash
 uv sync
-uv run python scripts/populate_training_skills.py
+uv run ms-agent-eval config validate \
+  --workspace experiments/mainsequence-sdk/workspace.yaml
 ```
 
-The population script has no arguments. It reads the installed `mainsequence` and `agent_scaffold` packages and refreshes:
-
-- `sdk/<installed-version>/`
-- `sdk/<installed-version>/case-map.yaml`
-
-## Workflow
-
-1. Refresh the installed SDK snapshot with `scripts/populate_training_skills.py`.
-2. Author or update reusable cases under `cases/<case-set-version>/skills/<skill-path>/cases/`.
-3. Adjust `sdk/<sdk-version>/case-map.yaml` only when a skill should map to a different case-set version.
-4. Run agents against a case id; the runner resolves the installed SDK version, loads the mapped case set, and injects the matching copied `AGENTS.md` and `SKILL.md`.
-5. Store outputs and evaluation artifacts under `runs/sdk/<sdk-version>/...`.
-
-## Useful Commands
+The base library installs without DSPy or any evaluated target library. Add the
+`dspy` extra only when compiling or running DSPy programs:
 
 ```bash
-uv run python scripts/populate_training_skills.py
-uv run python scripts/create_run.py --agent codex --model gpt-5.4
-uv run python scripts/run_ollama_case.py --model ms-fast:latest --case or-001-recurring-artifact-job
+uv venv --python 3.12 /tmp/ms-agent-eval
+uv pip install --python /tmp/ms-agent-eval/bin/python .
+uv pip install --python /tmp/ms-agent-eval/bin/python '.[dspy]'
 ```
 
-See [docs/conventions.md](/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/docs/conventions.md) for the case and run format, [docs/structure.md](/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/docs/structure.md) for the folder-by-folder explanation, and [docs/sdk-cli-notes.md](/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/docs/sdk-cli-notes.md) for the SDK/CLI snapshot rules.
-See [docs/ollama-workflow.md](/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/docs/ollama-workflow.md) for the local model testing workflow.
-See [docs/datanode-evaluation-spec.md](/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/docs/datanode-evaluation-spec.md), [docs/simpletable-evaluation-spec.md](/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/docs/simpletable-evaluation-spec.md), and [docs/simpletable-updater-evaluation-spec.md](/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/docs/simpletable-updater-evaluation-spec.md) for the construction evaluation criteria.
-See [docs/training_sources/ms-markets/metatables-and-datanodes-case-plan.md](/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/docs/training_sources/ms-markets/metatables-and-datanodes-case-plan.md) for the reference-derived MetaTable and DataNode case planning notes.
+## Configure a Repository
 
-Local project skills live under `.agents/skills/`. Use
-[case-authoring](/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/.agents/skills/case-authoring/SKILL.md)
-when creating or reviewing evaluation cases, and use
-[new_version_creation](/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/.agents/skills/new_version_creation/SKILL.md)
-when refreshing SDK snapshots or deciding whether a new case-set version is required.
+A target declares its GitHub source and exact instruction paths. There are no
+framework defaults for `agent_scaffold`, `.agents/skills`, or any other layout.
+
+```yaml
+schema_version: 1
+id: example-target
+display_name: Example target
+source:
+  type: github
+  repository_url: https://github.com/example/project
+  ref: {type: tag, value: v1.2.3}
+instruction_bundles:
+  - id: repository-guidance
+    display_name: Repository guidance
+    global_context:
+      - id: agents
+        source_path: .agents/AGENTS.md
+        required: true
+    units:
+      sources:
+        - id: skills
+          type: directory
+          root: .agents/skills
+          locator:
+            filename: SKILL.md
+            recursive: true
+            include: ["**/SKILL.md"]
+            exclude: []
+            follow_symlinks: false
+          logical_id: {prefix: ""}
+          allow_empty: false
+```
+
+Resolve/snapshot with an external root:
+
+```bash
+cp path/to/experiment/.env.example path/to/experiment/.env
+# Edit .env with an absolute external path.
+
+uv run ms-agent-eval target resolve example-target --workspace path/to/workspace.yaml
+uv run ms-agent-eval target snapshot example-target \
+  --workspace path/to/workspace.yaml \
+  --data-root /optional/explicit/override
+```
+
+Data-root precedence is `--data-root`, the process environment, then the `.env`
+beside `workspace.yaml`. The real `.env` is ignored because it is machine-local;
+each committed experiment should provide a safe `.env.example`.
+
+Tags are accepted as author input, but locks and runs use the resolved 40-byte
+commit and content-addressed snapshot id.
+
+## Experiments
+
+An experiment selects target, snapshot, bundle, suite, compatibility map,
+program, provider, runtime, storage, and optionally an optimizer. Planning is
+pure and deterministic; creation persists the lock and resumable job state only
+to the external data plane.
+
+```bash
+uv run ms-agent-eval experiment plan EXPERIMENT_ID \
+  --workspace path/to/workspace.yaml
+
+uv run ms-agent-eval experiment create EXPERIMENT_ID \
+  --workspace path/to/workspace.yaml \
+  --data-root "$MS_AGENT_EVAL_DATA_ROOT"
+```
+
+Repository imports, tools, tests, and patches use the pinned Python 3.12/uv
+Docker executor. Response-only prompt evaluation can use the `none` runtime.
+Program/provider execution is exposed through the typed package APIs so an
+application can schedule workers without coupling core to a particular model.
+
+## Evaluation and Optimization
+
+Cases explicitly declare `active`, `manual_review_required`, or
+`not_evaluable`. Active evaluator names resolve exactly through a calibrated
+registry. Unsupported cases fail before a model request unless unscored
+generation was explicitly allowed.
+
+The configured Main Sequence evaluator can validate its case bank with:
+
+```bash
+uv run ms-agent-eval evaluator validate mainsequence-rules-v1 \
+  --suite mainsequence-agent-skills-v2 \
+  --workspace experiments/mainsequence-sdk/workspace.yaml
+```
+
+The committed Main Sequence optimization readiness experiment plans correctly
+but fails evaluator preflight because most v2 train/development cases are not yet
+calibrated. No model call or misleading optimized score is produced.
+
+## Results and Reports
+
+Generated snapshots, responses, evaluations, compiled programs, and reports are
+written only below `MS_AGENT_EVAL_DATA_ROOT`. A minimal schema-v0 run fixture lives
+under `tests/fixtures/legacy-run-v0/` solely to test compatibility readers.
+
+Generic summaries and regressions are produced with `ms-agent-eval report summary`
+and `ms-agent-eval report regression`. Reports never merge different commits,
+splits, compiled artifacts, providers, or evaluators into one unlabeled score.
+
+## Verification
+
+```bash
+uv run ruff check src tests
+uv run pytest
+
+# Optional live boundaries
+MS_AGENT_EVAL_RUN_DOCKER_TESTS=1 uv run pytest -m docker
+OLLAMA_BASE_URL=http://127.0.0.1:11434 OLLAMA_MODEL=model-name \
+  uv run pytest -m ollama
+```
+
+The Docker integration is pinned and network-isolated. Live Ollama acceptance is
+optional and remains unverified until an endpoint/model is configured.
+
+For authored Main Sequence cases, use the local
+[case-authoring skill](/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/.agents/skills/case-authoring/SKILL.md).
+For a new public Main Sequence version, use the
+[MainSequence experiment-version skill](/Users/jose/code/MainSequenceClientSide/SdkAgentTraining/.agents/skills/mainsequence-experiment-version/SKILL.md).

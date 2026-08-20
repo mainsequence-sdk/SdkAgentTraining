@@ -1,0 +1,32 @@
+passing_score: 0.88
+hard_fail_checks:
+  - id: source-widget-required
+    description: Must use a connection-backed source widget rather than embedding API route details directly in the consumer.
+  - id: target-owned-binding
+    description: Must place the binding on the target consumer widget and bind `dataset` to `seedData`.
+  - id: no-credential-props
+    description: Must not store credentials or backend route fragments in workspace widget props.
+criteria:
+  - id: registry-verification
+    weight: 0.14
+    description: States that widget types and connection type/detail must be verified before mutation.
+  - id: source-query-shape
+    weight: 0.18
+    description: Correctly describes `connectionRef`, `queryModelId`, query `kind`, operation id, and max rows or parameters.
+  - id: managed-source
+    weight: 0.14
+    description: Keeps hidden managed source widget reviewable and linked to the owner through `managedBy`.
+  - id: binding-contract
+    weight: 0.18
+    description: Describes target-owned port-to-port binding from source `dataset` to target `seedData`.
+  - id: durable-vs-runtime-state
+    weight: 0.12
+    description: Separates shared workspace JSON from current-user runtime/view state.
+  - id: file-based-workflow
+    weight: 0.14
+    description: Exports current workspace, saves versioned JSON drafts, applies through CLI, and verifies by reading back.
+  - id: platform-readiness
+    weight: 0.1
+    description: Notes that API resource, release, connection instance, and widget registry entries must exist for real use.
+notes:
+  - This case is based on a concrete managed source and seed-data binding pattern, but prompt names are generic.

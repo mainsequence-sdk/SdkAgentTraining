@@ -1,0 +1,29 @@
+id: or-040-decide-if-recurring-job-should-live-in-git
+title: Treat recurring schedules as code
+skill_path: platform_operations/orchestration_and_releases
+case_set_version: v2
+authored_against_sdk_version: 3.17.33
+tags:
+- decision
+- jobs
+- git
+- schedules
+difficulty: medium
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+- Put the recurring schedule in `scheduled_jobs.yaml`.
+- Treat the file as reviewable code in the repository.
+- Avoid hiding the schedule in one-off commands or shell history.
+source_docs:
+- docs/tutorial/scheduling_jobs.md
+- docs/knowledge/infrastructure/scheduling_jobs.md
+target_sdk_version: 4.4.5
+migrated_from_case_set: v1
+migration_status: pending_revalidation
+evaluator:
+  name: mainsequence.pending-evaluator-v1
+  method: none
+  status: not_evaluable

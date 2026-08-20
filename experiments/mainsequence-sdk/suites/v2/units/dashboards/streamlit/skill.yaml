@@ -1,0 +1,12 @@
+skill_path: dashboards/streamlit
+case_set_version: v2
+target_sdk_version: 4.4.5
+source_sdk_skill: https://github.com/mainsequence-sdk/mainsequence-sdk/blob/3b5a20a344cec0c960351dc3c601d32a66a8b46e/agent_scaffold/skills/dashboards/streamlit/SKILL.md
+display_name: mainsequence-dashboards-streamlit
+description: Use this skill when the task is about building a Streamlit dashboard
+  in a Main Sequence project. This skill owns dashboard folder structure, app-owned
+  page bootstrapping, sidebar and session patterns, and dashboard-specific validation
+  rules. It does not own FastAPI APIs, Command Center workspace documents, or release
+  orchestration semantics.
+migrated_from_case_set: v1
+migration_status: pending_revalidation

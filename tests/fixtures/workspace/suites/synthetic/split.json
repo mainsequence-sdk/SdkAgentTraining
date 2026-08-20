@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "id": "synthetic-v1",
+  "assignments": [
+    {"case_id": "coding-001", "group_id": "coding", "split": "test"}
+  ],
+  "content_hash": "sha256:f6139d3a6174ac024756d74879cc4538e0048f838804f9a88e1811d44f33f51b"
+}

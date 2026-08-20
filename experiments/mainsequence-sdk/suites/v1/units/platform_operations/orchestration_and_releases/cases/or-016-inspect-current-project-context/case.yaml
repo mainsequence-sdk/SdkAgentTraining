@@ -1,0 +1,25 @@
+id: or-016-inspect-current-project-context
+title: Inspect current project context before live operations
+skill_path: platform_operations/orchestration_and_releases
+case_set_version: v1
+authored_against_sdk_version: 3.17.33
+tags:
+- cli
+- project
+- verification
+- context
+difficulty: easy
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+- Uses project current --debug
+- Chooses project-context verification before live operations
+source_docs:
+- docs/cli/index.md
+- docs/knowledge/cli.md
+evaluator:
+  name: mainsequence.pending-evaluator-v1
+  method: none
+  status: not_evaluable

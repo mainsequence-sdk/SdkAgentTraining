@@ -1,0 +1,32 @@
+passing_score: 0.88
+hard_fail_checks:
+  - id: artifact-primitive
+    description: Must choose `Artifact` for the CSV file input.
+  - id: no-local-path
+    description: Must reject laptop-specific local paths as the operational reference.
+  - id: runtime-lookup
+    description: Must retrieve the file by stable artifact identity at execution time.
+criteria:
+  - id: configuration-boundary
+    weight: 0.18
+    description: Stores bucket and artifact names in configuration instead of file bytes or local paths.
+  - id: sdk-lookup
+    weight: 0.16
+    description: Describes SDK artifact lookup by bucket/name and reading artifact content as CSV input.
+  - id: orchestration
+    weight: 0.14
+    description: Uses a pinned project-image job for shared or scheduled execution rather than an ad hoc laptop command.
+  - id: access-routing
+    weight: 0.12
+    description: Routes bucket/artifact access decisions to access-control and verifies the real resource boundary.
+  - id: verification
+    weight: 0.22
+    description: Verifies artifact existence, job access, run logs, and downstream output evidence.
+  - id: separation-of-concerns
+    weight: 0.1
+    description: Separates operational file transport from downstream DataNode or table normalization.
+  - id: strict-mode
+    weight: 0.08
+    description: Avoids strict batch sync unless the jobs file is the full desired state.
+notes:
+  - This case is narrower than the existing recurring Artifact job case; it focuses on configured runtime file lookup.

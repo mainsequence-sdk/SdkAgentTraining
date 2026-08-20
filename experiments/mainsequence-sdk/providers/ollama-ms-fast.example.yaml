@@ -1,0 +1,8 @@
+schema_version: 1
+id: ollama-ms-fast.example
+driver: ollama
+model: ms-fast:latest
+parameters:
+  base_url_env: OLLAMA_BASE_URL
+  temperature: 0.2
+  timeout_seconds: 300

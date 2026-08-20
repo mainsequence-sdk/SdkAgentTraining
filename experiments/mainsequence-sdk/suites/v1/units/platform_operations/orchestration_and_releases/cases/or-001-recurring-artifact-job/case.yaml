@@ -1,0 +1,31 @@
+id: or-001-recurring-artifact-job
+title: Define a reproducible recurring job that starts from an Artifact file drop
+skill_path: platform_operations/orchestration_and_releases
+case_set_version: v1
+authored_against_sdk_version: 3.17.33
+tags:
+- jobs
+- schedules
+- images
+- artifacts
+- orchestration
+difficulty: medium
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+- Chooses a repository-managed recurring workflow instead of an ad hoc manual job
+- Uses `scheduled_jobs.yaml` for the recurring schedule
+- Treats `Artifact` as the correct file primitive for vendor file drops
+- Pins the job to a project image with `related_image_id`
+- Avoids `--strict` unless full desired state is explicitly intended
+- Verifies the created job through job listing, runs, and logs
+source_docs:
+- docs/tutorial/scheduling_jobs.md
+- docs/knowledge/infrastructure/scheduling_jobs.md
+- docs/knowledge/infrastructure/artifacts.md
+evaluator:
+  name: mainsequence.pending-evaluator-v1
+  method: none
+  status: not_evaluable

@@ -1,0 +1,54 @@
+id: dn-005-derived-market-cap-source-dependency
+title: Design a derived market-cap DataNode from source bars
+skill_path: data_publishing/data_nodes
+case_set_version: v2
+authored_against_sdk_version: 4.4.5
+target_sdk_version: 4.4.5
+tags:
+- data_nodes
+- derived-series
+- dependencies
+- asset-identity
+- incremental-updates
+- difficult
+difficulty: hard
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+- Exposes the source bars node or APIDataNode as an explicit dependency
+- Transforms source instrument identity into the output asset identity deterministically
+- Uses per-output-asset update statistics to request only needed source ranges
+- Keeps static supply anchors and source selection out of storage columns unless they are real observations
+evaluator:
+  name: mainsequence.data-node-storage-first-manual-v1
+  method: human-review
+  status: manual_review_required
+case_source_of_truth:
+  kind: reference-implementation
+  package: binance-connectors
+  version: 0.1.21
+  repository: https://github.com/mainsequence-projects/binance-connectors
+  ref: refs/tags/v0.1.21
+  tree_url: https://github.com/mainsequence-projects/binance-connectors/tree/v0.1.21
+  files:
+  - path: src/portfolios/market_cap_series.py
+    symbols:
+    - BinanceMarketCapStorage
+    - BinanceMarketCap
+    - binance_market_cap_asset_identifier
+    - _source_bar_dimension_range_map
+  - path: src/data_nodes/binance_bars.py
+    symbols:
+    - BinanceKlineBarsNode
+    - BinanceTradeTimeBarsNode
+  - path: src/data_nodes/binance_bars_storage.py
+    symbols:
+    - kline_bars_storage
+    - trade_time_bars_storage
+supporting_context:
+  sdk_skill_source:
+  - https://github.com/mainsequence-sdk/mainsequence-sdk/blob/3b5a20a344cec0c960351dc3c601d32a66a8b46e/agent_scaffold/skills/data_publishing/data_nodes/SKILL.md
+  training_notes:
+  - experiments/mainsequence-sdk/sources/binance-connectors/metatables-and-datanodes-case-plan.md

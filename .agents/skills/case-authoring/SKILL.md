@@ -1,298 +1,152 @@
 ---
 name: case-authoring
-description: Use this skill when creating, updating, reviewing, or planning evaluation cases in the SdkAgentTraining repository, including writing case.yaml, prompt.md, expected responses, rubrics, skill case-bank READMEs, and cases derived from SDK skill snapshots or training-source documents.
+description: Use when creating, updating, reviewing, or planning evaluation cases in MS Agent Eval experiment workspaces, including case.yaml, prompts, expected responses, rubrics, case-bank metadata, and cases grounded in immutable repository snapshots or training-source documents.
 ---
 
 # Case Authoring
 
 ## Purpose
 
-Create reusable evaluation cases for this repository without mixing authored
-case material, copied SDK skill snapshots, and model run outputs.
-
-Use this skill for case work only. Use `new_version_creation` when the task is
-about refreshing an installed SDK snapshot, deciding whether a new case-set
-version is needed, or changing `sdk/<version>/case-map.yaml`.
+Create reusable evaluation cases without committing evaluated-repository
+snapshots or model-generated runtime data. An experiment workspace owns its
+authored suites; the external data root owns resolved source and run artifacts.
 
 ## Read First
 
-Before authoring or changing cases, read:
+Before changing a case, read:
 
-- `README.md`
-- `docs/structure.md`
-- `docs/conventions.md`
-- the relevant evaluator spec under `docs/`
-- the relevant training-source plan under `docs/training_sources/`, if any
-- `sdk/<target-sdk-version>/case-map.yaml`
-- `sdk/<target-sdk-version>/source-of-truth.yaml`
-- `sdk/<target-sdk-version>/skills/<skill-path>/source/SKILL.md`
-- the target case-bank `README.md` and `skill.yaml` under
-  `cases/<case-set-version>/skills/<skill-path>/`
+- `README.md`, `docs/structure.md`, and `docs/conventions.md`;
+- the workspace target, snapshot lock, compatibility map, and suite manifest;
+- the relevant immutable upstream instruction file identified by the snapshot
+  lock;
+- the target unit's `README.md` and `skill.yaml` in the suite;
+- the relevant evaluator specification;
+- any referenced source note under the workspace's `sources/`;
+- the configured trusted evaluator under the workspace's `evaluators/`.
 
-For reference-project-derived MetaTable/DataNode cases, also read:
+For the MainSequence workspace, start from:
 
-- the relevant plan under `docs/training_sources/`
-- the SDK `data_publishing/meta_tables`, `data_publishing/data_nodes`, and
-  `data_publishing/meta_table_migrations` skill snapshots as relevant
+```text
+experiments/mainsequence-sdk/targets/mainsequence-sdk.yaml
+experiments/mainsequence-sdk/snapshots/
+experiments/mainsequence-sdk/compatibility/
+experiments/mainsequence-sdk/suites/<version>/
+```
+
+Use `mainsequence-experiment-version` when changing the target revision,
+snapshot lock, compatibility mapping, or suite version.
 
 ## Ownership Rules
 
-- Put authored cases only under `cases/<case-set-version>/skills/<skill-path>/cases/`.
-- Put copied SDK skill source only under
-  `sdk/<sdk-version>/skills/<skill-path>/source/SKILL.md`.
-- Put model outputs only under `runs/sdk/<sdk-version>/...`.
-- Do not copy `SKILL.md` into a case folder.
-- Do not edit SDK snapshots while authoring cases unless the user explicitly
-  asks for a local patched snapshot.
-- Do not create a new case-set version unless SDK compatibility requires it;
-  use the new-version skill for that decision.
+- Put authored cases only under
+  `experiments/<workspace>/suites/<version>/units/<unit>/cases/`.
+- Co-locate `suite.yaml`, `split.json`, and `units/` under the suite version.
+- Put compact target, snapshot, compatibility, evaluator, and profile documents
+  in the experiment workspace.
+- Put repository checkouts, extracted source, prompts sent to models, responses,
+  evaluations, optimizer artifacts, and reports under `MS_AGENT_EVAL_DATA_ROOT`.
+- Keep only minimal deterministic regression inputs under `tests/fixtures/`.
+- Never create top-level `cases/`, `sdk/`, `runs/`, `reports/`, or `spikes/`.
+- Never copy an upstream `SKILL.md` into an authored suite.
 
 ## Required Decisions
 
-Before creating files, decide and state:
+Before writing, determine:
 
-1. Target SDK version.
-2. Target case-set version.
-3. Target skill path.
-4. SDK source-of-truth file and upstream git ref being evaluated.
-5. Source material used to ground the case.
-6. Skill behavior being evaluated.
-7. Difficulty level and why the task is difficult.
-8. Expected answer mode: explanation only, code plan, code patch, CLI workflow,
-   artifact design, or mixed.
-9. Whether the case expects files, commands, or only a written answer.
-10. Evaluator method and evaluator name.
-11. Hard-fail criteria versus quality criteria.
+1. Experiment workspace and target id.
+2. Resolved source commit and snapshot lock.
+3. Suite id/version and instruction unit id.
+4. Immutable upstream instruction path.
+5. Grounding source material.
+6. Behavior being evaluated and why it is difficult.
+7. Expected answer mode and artifacts.
+8. Evaluator name, method, and status.
+9. Hard-fail criteria and quality criteria.
+10. Leakage-resistant split group.
 
-If any decision cannot be made from local docs and files, stop and ask a narrow
-question instead of inventing case semantics.
+Stop and ask a narrow question if local configuration and locked source cannot
+resolve one of these decisions.
 
-## Case Design Workflow
+## Workflow
 
-### 1. Confirm The Target Skill
+### 1. Resolve the exact source
 
-Resolve the SDK skill source through the SDK snapshot and case map.
+Use the target configuration and snapshot lock. Tags are author input; the full
+resolved commit is the evaluation identity. Read source from the immutable
+external snapshot or the exact upstream commit, never from memory or an
+installed package.
 
-Check:
+For supporting context, cite an immutable GitHub blob URL or the snapshot id plus
+its exact `source_path`. Do not cite deleted local snapshot paths.
 
-```text
-sdk/<sdk-version>/case-map.yaml
-sdk/<sdk-version>/source-of-truth.yaml
-sdk/<sdk-version>/skills/<skill-path>/source/SKILL.md
-cases/<case-set-version>/skills/<skill-path>/
-```
+### 2. Design the evaluation first
 
-The case must evaluate the skill text for that SDK version, not memory of older
-SDK behavior.
+Define the simulated user request, correct decisions, likely mistakes,
+hard-fails, scored qualities, and required verification before editing files.
+Prefer one focused case over a broad case spanning unrelated units.
 
-For reference-project-derived cases, `case_source_of_truth` must cite the git
-repository, package name, package version, and repository tag/ref for the
-implementation being evaluated, plus repository-relative source files and
-symbols. Do not store local checkout paths as the case source of truth. SDK
-skill snapshots and planning docs belong under `supporting_context`, not under
-the case source of truth. The upstream SDK audit anchor belongs in
-`sdk/<sdk-version>/source-of-truth.yaml`.
+### 3. Keep prompts self-contained without leaking the rubric
 
-### 2. Design The Evaluation Before Writing
+Prompts must include necessary task context but must not reveal reference
+implementations, exact checklist items, required symbol names merely as hints,
+or the expected answer. State whether the response should explain, plan, patch,
+run commands, design artifacts, or combine those modes.
 
-Write down the intended target behavior before creating the case files.
-
-The design must include:
-
-- the precise user request simulated by the prompt
-- the important concepts the model must apply
-- what makes the task non-trivial
-- expected correct decisions
-- common wrong decisions to catch
-- hard-fail checks
-- quality checks
-- expected verification or evidence
-
-For complex domains, prefer one focused case over a broad case that evaluates
-too many unrelated skills.
-
-### 3. Keep Prompts Self-Contained But Not Overfed
-
-The prompt should include enough task context for a model to act, but it should
-not include the rubric answer. The prompt is the simulated user request, not
-the evaluation checklist.
-
-Good prompts:
-
-- present realistic user intent
-- include necessary local paths, names, and constraints
-- force decisions that the skill should own
-- avoid telling the model exactly which checklist items to recite
-- specify whether code should be written or only planned
-- hide the reference implementation package, repository, tag, and source files
-
-Bad prompts:
-
-- ask vague questions with no success condition
-- copy the full expected answer into the task
-- combine unrelated skills without clear routing criteria
-- depend on hidden state that the runner cannot provide
-- reveal the reference implementation package, repository, or source-of-truth
-  used to derive the case
-- include `Your answer should` checklists that mirror the rubric or skill rules
-- tell the model to answer as a named skill owner when the runner already
-  injects the target skill
-- list SDK class names, method names, validation rules, or required decisions
-  merely to cue the expected answer
-- turn rubric bullets into prompt bullets
-- use "include X, Y, and Z" framing when X, Y, and Z are exactly what the
-  evaluator is supposed to discover from the injected skill
-
-### 4. Use The Standard Case Folder Shape
-
-Each case folder must use:
+### 4. Use the standard case shape
 
 ```text
-cases/<case-set-version>/skills/<skill-path>/cases/<case-id>/
+experiments/<workspace>/suites/<version>/units/<unit>/cases/<case-id>/
 ├── case.yaml
 ├── prompt.md
 ├── expected/
 │   ├── response.md
-│   └── artifacts/
+│   └── artifacts/       optional
 └── rubric.yaml
 ```
 
-Only include `expected/artifacts/` when artifacts are part of the expected
-output. Keep empty placeholder files out unless the surrounding case bank
-already uses them.
+Do not add empty placeholder directories or files.
 
-### 5. Write Case Metadata
+### 5. Write explicit metadata
 
-`case.yaml` should include:
+`case.yaml` must identify the case, suite version, target revision basis, unit,
+difficulty, requirements, success conditions, evaluator, and supporting source.
+Implementation-derived cases must use repository URLs, versions/refs,
+repository-relative files, and symbols—not local checkout paths.
 
-- `id`
-- `title`
-- `skill_path`
-- `case_set_version`
-- `authored_against_sdk_version`
-- `tags`
-- `difficulty`
-- `requires`
-- `success`
-- `evaluator`
-- `case_source_of_truth` for cases derived from an implementation
-- `supporting_context` for SDK skills, planning docs, and evaluator specs
+Every evaluator block must declare an exact namespaced name, method, and one of:
 
-Recommended evaluator shape:
+- `active` with `rule-based-checklist`;
+- `manual_review_required` with `human-review`;
+- `not_evaluable` with `none`.
 
-```yaml
-evaluator:
-  name: rule-based-checklist
-  method: rule-based-checklist
-```
+### 6. Write expected output and rubric
 
-If a human or model evaluator is intended, include its name explicitly.
+Describe semantic requirements, commands, artifacts, reasoning, and non-goals in
+`expected/response.md`. Separate binary hard-fails from scored quality criteria
+in `rubric.yaml`. Penalize invented APIs, stale target behavior, wrong routing,
+missing verification, source leakage, and missing evaluator identity.
 
-### 6. Write Expected Output
+### 7. Preserve dataset governance
 
-`expected/response.md` should describe the expected answer at the right level of
-specificity.
+Assign related or paraphrased cases to one leakage-resistant group. Optimization
+may use train/development only. Never use held-out test feedback to revise a
+candidate prompt or compiled program.
 
-Use:
+## Validation
 
-- required decisions
-- required commands or file paths
-- required reasoning
-- required artifacts
-- explicit non-goals
+Before finishing:
 
-Do not make the expected response depend on exact prose unless the case is
-testing wording. Prefer semantic requirements that a rubric can evaluate.
+- validate the entire workspace with `ms-agent-eval config validate`;
+- load every changed `case.yaml` through `CaseDefinition`;
+- verify required files and exact evaluator metadata;
+- verify cited immutable source paths against the snapshot lock;
+- verify prompts do not expose rubric answers or reference implementations;
+- update suite/unit indexes when adding or removing cases;
+- run evaluator calibration and the relevant tests;
+- confirm no runtime output was written inside the Git workspace.
 
-### 7. Write The Rubric
+## Final Response
 
-`rubric.yaml` must separate hard-fail checks from quality checks.
-
-Hard-fail checks are binary and should fail the case regardless of quality
-score. Quality checks can be scored.
-
-Rubrics should penalize:
-
-- wrong skill routing
-- outdated SDK behavior
-- invented commands or APIs
-- missing verification
-- mixing `cases/`, `sdk/`, and `runs/` responsibilities
-- missing evaluator identity
-- missing source grounding
-
-For construction cases, also penalize implementation shortcuts that violate the
-relevant evaluator spec.
-
-## Reference-Derived Data-Publishing Case Rules
-
-For reference-derived MetaTable and DataNode cases, evaluate architectural
-discipline, not just syntax. These are evaluator targets. Keep them in
-`expected/response.md` and `rubric.yaml`; do not paste them into `prompt.md`
-as checklist hints.
-
-MetaTable cases must test:
-
-- row grain
-- primary keys and business keys
-- SQLAlchemy foreign keys and correct FK targets
-- unique and lookup indexes
-- `RESTRICT` versus `CASCADE`
-- column labels and descriptions
-- migration-provider inclusion
-- no runtime `.register()`
-
-DataNode cases must test:
-
-- storage-first `PlatformTimeIndexMetaTable`
-- config contains update-scoped fields only
-- canonical identity dimensions such as `asset_identifier`,
-  `portfolio_identifier`, `curve_identifier`, or `index_identifier`
-- storage-table foreign keys
-- `datetime64[ns, UTC]` output
-- no duplicate index rows
-- deterministic dependencies
-- `UpdateStatistics` use for incremental behavior
-
-Migration cases must test:
-
-- SDK helper-based migration provider
-- explicit model registry
-- de-duplicated model graph
-- correct `mainsequence migrations ... --provider ...` commands
-- runtime attach-only behavior
-
-## Validation Checklist
-
-Before finishing case work, verify:
-
-- the case folder is under the mapped case-set version
-- `case.yaml`, `prompt.md`, `expected/response.md`, and `rubric.yaml` exist
-- `skill_path` matches the SDK skill path exactly
-- `authored_against_sdk_version` matches the SDK snapshot used
-- `sdk/<target-sdk-version>/source-of-truth.yaml` exists and names the upstream
-  git ref, or explicitly marks it unverified
-- implementation-derived cases use `case_source_of_truth` with a git repository,
-  package version, repository tag/ref, repository-relative source files, and
-  symbols; they do not list docs or local checkout paths as the truth source
-- prompts do not reveal the reference implementation package/repository and do
-  not include checklist-style rubric hints
-- the prompt is self-contained
-- the expected response is not just a copy of the rubric
-- the rubric has hard-fail and quality sections
-- evaluator name and method are explicit
-- README or skill metadata for the case bank is updated when a new case family
-  is added
-
-## Final Response Requirements
-
-When reporting case-authoring work, include:
-
-- case-set version
-- SDK version
-- skill path
-- cases created or updated
-- source-of-truth files or training sources used
-- SDK source-of-truth git ref and verification status
-- validation performed
-- any remaining revalidation or evaluator gaps
+Report the workspace, target commit, suite version, unit, cases changed, source
+material, evaluator status, validation performed, and remaining evaluator or
+revalidation gaps.

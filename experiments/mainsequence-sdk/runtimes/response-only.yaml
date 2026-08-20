@@ -1,0 +1,5 @@
+schema_version: 1
+id: response-only
+backend: none
+python: "3.12"
+network: restricted

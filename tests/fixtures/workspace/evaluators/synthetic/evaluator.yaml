@@ -1,0 +1,5 @@
+schema_version: 1
+id: synthetic-rules-v1
+module_path: evaluators/synthetic/plugin.py
+factory: build_registry
+configuration: {}

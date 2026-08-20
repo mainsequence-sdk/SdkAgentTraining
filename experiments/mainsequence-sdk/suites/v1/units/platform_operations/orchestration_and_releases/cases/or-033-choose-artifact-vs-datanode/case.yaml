@@ -1,0 +1,26 @@
+id: or-033-choose-artifact-vs-datanode
+title: Choose Artifact instead of DataNode for file drops
+skill_path: platform_operations/orchestration_and_releases
+case_set_version: v1
+authored_against_sdk_version: 3.17.33
+tags:
+- decision
+- artifacts
+- files
+- datanodes
+difficulty: medium
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+- Choose `Artifact` for the raw file workflow.
+- Explain that the operational unit is a file rather than a structured table.
+- Avoid forcing the workflow into a table primitive too early.
+source_docs:
+- docs/tutorial/scheduling_jobs.md
+- docs/knowledge/infrastructure/artifacts.md
+evaluator:
+  name: mainsequence.pending-evaluator-v1
+  method: none
+  status: not_evaluable

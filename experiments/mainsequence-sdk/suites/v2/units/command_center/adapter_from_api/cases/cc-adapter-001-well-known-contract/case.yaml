@@ -1,0 +1,53 @@
+id: cc-adapter-001-well-known-contract
+title: Expose a well-known Adapter from API connection contract
+skill_path: command_center/adapter_from_api
+case_set_version: v2
+authored_against_sdk_version: 4.4.5
+target_sdk_version: 4.4.5
+tags:
+  - command-center
+  - adapter-from-api
+  - connection-contract
+  - openapi
+  - operation-metadata
+difficulty: hard
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+  - Uses the well-known Command Center connection contract endpoint as the adapter source of truth.
+  - Keeps OpenAPI as supporting documentation rather than the adapter contract itself.
+  - Provides a dedicated health operation and stable operation allowlist.
+  - Separates query and mutation operation metadata.
+  - Distinguishes direct canonical tabular responses from provider-native responses with optional mappings.
+evaluator:
+  name: mainsequence.pending-evaluator-v1
+  method: none
+  status: not_evaluable
+case_source_of_truth:
+  kind: reference-implementation
+  package: ms-markets
+  version: 0.0.73
+  repository: https://github.com/mainsequence-projects/MainSequenceMarkets
+  ref: refs/tags/v0.0.73
+  tree_url: https://github.com/mainsequence-projects/MainSequenceMarkets/tree/v0.0.73
+  files:
+    - path: apps/v1/routers/command_center.py
+      symbols:
+        - get_health
+        - get_command_center_connection_contract
+    - path: apps/v1/services/command_center_adapter.py
+      symbols:
+        - build_command_center_connection_contract
+        - QUERY_OPERATION_IDS
+        - MUTATION_OPERATION_IDS
+    - path: tests/msm/fastapi/v1/test_command_center_adapter.py
+      symbols:
+        - test_command_center_contract_exposes_required_control_metadata
+        - test_command_center_registry_matches_current_public_openapi_operations
+        - test_command_center_contract_documents_response_contract_boundaries
+supporting_context:
+  sdk_skill_source:
+    - https://github.com/mainsequence-sdk/mainsequence-sdk/blob/3b5a20a344cec0c960351dc3c601d32a66a8b46e/agent_scaffold/skills/command_center/adapter_from_api/SKILL.md
+    - https://github.com/mainsequence-sdk/mainsequence-sdk/blob/3b5a20a344cec0c960351dc3c601d32a66a8b46e/agent_scaffold/skills/application_surfaces/api_surfaces/SKILL.md

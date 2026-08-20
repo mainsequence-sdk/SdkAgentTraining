@@ -1,27 +1,48 @@
 [build-system]
-requires = ["setuptools>=69", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling==1.27.0"]
+build-backend = "hatchling.build"
 
 [project]
-name = "sdk-agent-training"
+name = "ms-agent-eval"
 version = "0.1.0"
-description = "Training and evaluation corpus for mainsequence-sdk agent_scaffold skills"
+description = "Library-agnostic repository-agent evaluation and prompt optimization"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = [
-  "mainsequence==4.4.5",
-  "pyyaml",
+  "pyyaml>=6.0.2",
 ]
 
 [project.optional-dependencies]
+dspy = [
+  "dspy==3.2.1",
+]
+all = [
+  "dspy==3.2.1",
+]
+
+[project.scripts]
+ms-agent-eval = "ms_agent_eval.core.cli:main"
+
+[dependency-groups]
 dev = [
+  "dspy==3.2.1",
   "pytest>=8.3",
   "ruff>=0.6",
 ]
 
-[tool.setuptools]
-py-modules = []
+[tool.hatch.build.targets.wheel]
+packages = ["src/ms_agent_eval"]
 
 [tool.ruff]
 line-length = 100
-target-version = "py311"
+target-version = "py312"
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = [
+  "tests",
+]
+markers = [
+  "docker: requires access to a running Docker daemon and pinned runtime image",
+  "ollama: requires a configured live Ollama service",
+]

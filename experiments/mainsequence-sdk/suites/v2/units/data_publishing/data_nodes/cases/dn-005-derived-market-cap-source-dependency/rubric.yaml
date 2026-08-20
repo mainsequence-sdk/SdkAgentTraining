@@ -1,0 +1,29 @@
+passing_score: 0.9
+hard_fail_checks:
+- id: explicit-source-dependency
+  description: Must expose source bars as a deterministic dependency, not hide source construction in update logic.
+- id: identity-transform
+  description: Must distinguish source tradable instrument identity from output market-cap asset identity.
+- id: incremental-source-read
+  description: Must use output update statistics to request scoped source ranges, not full source history.
+- id: dataframe-contract
+  description: Must satisfy the current DataNode DataFrame validation contract and return DataFrame objects.
+criteria:
+- id: storage-contract
+  weight: 0.2
+  description: Defines output time-indexed storage grain, cadence, asset FK, columns, and metadata.
+- id: dependency-contract
+  weight: 0.22
+  description: Validates exactly one source path and exposes it through deterministic dependencies.
+- id: asset-mapping
+  weight: 0.18
+  description: Handles source-to-output asset mapping, static supply anchors, and missing supply behavior.
+- id: incremental-behavior
+  weight: 0.18
+  description: Uses per-output-asset update state and scoped source reads.
+- id: output-hygiene
+  weight: 0.12
+  description: Produces clean lowercase observation columns, UTC nanosecond index, and no duplicate rows.
+- id: non-goals
+  weight: 0.1
+  description: Rejects hidden source construction, ticker identity, full-history reads, runtime storage registration, and policy columns.

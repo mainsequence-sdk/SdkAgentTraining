@@ -1,0 +1,43 @@
+id: or-051-configured-artifact-file-input
+title: Use a configured Artifact as an operational CSV input
+skill_path: platform_operations/orchestration_and_releases
+case_set_version: v2
+authored_against_sdk_version: 4.4.5
+target_sdk_version: 4.4.5
+tags:
+  - artifacts
+  - csv-input
+  - operational-files
+  - jobs
+  - portability
+difficulty: medium
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+  - Chooses Artifact for the operational file input instead of a laptop path.
+  - Stores bucket and artifact identity in workflow configuration.
+  - Reads the file through SDK Artifact lookup at execution time.
+  - Separates file transport from downstream table or DataNode normalization.
+  - Lists verification for artifact existence, access, job configuration, and logs.
+evaluator:
+  name: mainsequence.pending-evaluator-v1
+  method: none
+  status: not_evaluable
+case_source_of_truth:
+  kind: reference-implementation
+  package: ms-markets
+  version: 0.0.73
+  repository: https://github.com/mainsequence-projects/MainSequenceMarkets
+  ref: refs/tags/v0.0.73
+  tree_url: https://github.com/mainsequence-projects/MainSequenceMarkets/tree/v0.0.73
+  files:
+    - path: src/msm_portfolios/contrib/signals/external_weights.py
+      symbols:
+        - ExternalWeightsConfig
+        - ExternalWeights._calculate_signal_weights
+supporting_context:
+  sdk_skill_source:
+    - https://github.com/mainsequence-sdk/mainsequence-sdk/blob/3b5a20a344cec0c960351dc3c601d32a66a8b46e/agent_scaffold/skills/platform_operations/orchestration_and_releases/SKILL.md
+    - https://github.com/mainsequence-sdk/mainsequence-sdk/blob/3b5a20a344cec0c960351dc3c601d32a66a8b46e/agent_scaffold/skills/platform_operations/access_control_and_sharing/SKILL.md

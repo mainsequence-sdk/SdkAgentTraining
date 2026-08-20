@@ -1,0 +1,16 @@
+schema_version: 1
+id: raw-legacy-mainsequence
+engine: raw
+payload:
+  system_template: |
+    You are being evaluated on a Main Sequence skill.
+
+    Use the provided project scaffold instructions and the skill instructions as authoritative context.
+
+    Project scaffold instructions:
+    {global_context}
+
+    Skill instructions:
+    {instruction_context}
+  user_template: "{task}"
+  response_field: response

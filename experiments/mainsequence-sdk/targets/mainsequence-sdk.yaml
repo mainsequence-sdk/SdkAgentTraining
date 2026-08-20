@@ -1,0 +1,56 @@
+schema_version: 1
+id: mainsequence-sdk
+display_name: Main Sequence SDK
+source:
+  type: github
+  repository_url: https://github.com/mainsequence-sdk/mainsequence-sdk
+  ref:
+    type: tag
+    value: v4.4.5
+  fetch:
+    submodules: false
+    git_lfs: false
+instruction_bundles:
+  - id: agent-scaffold
+    display_name: Main Sequence Agent Scaffold
+    global_context:
+      - id: project-instructions
+        source_path: agent_scaffold/AGENTS.md
+        required: true
+    units:
+      sources:
+        - id: agent-scaffold-skills
+          type: directory
+          root: agent_scaffold/skills
+          locator:
+            filename: SKILL.md
+            recursive: true
+            include: ["**/SKILL.md"]
+            exclude: []
+            follow_symlinks: false
+          logical_id:
+            prefix: ""
+          allow_empty: false
+          assertions:
+            exact_count: 20
+            required_ids:
+              - a2a_communication
+              - application_surfaces/api_surfaces
+              - command_center/adapter_from_api
+              - command_center/api_mock_prototyping
+              - command_center/app_components
+              - command_center/connections
+              - command_center/workspace_analysis
+              - command_center/workspace_builder
+              - command_center/workspace_design
+              - dashboards/streamlit
+              - data_access/exploration
+              - data_publishing/data_nodes
+              - data_publishing/meta_table_migrations
+              - data_publishing/meta_tables
+              - maintenance/bug_auditor
+              - ms-markets
+              - platform_operations/access_control_and_sharing
+              - platform_operations/orchestration_and_releases
+              - project_builder
+              - project_to_agent

@@ -1,0 +1,71 @@
+id: mtm-004-scoped-and-dynamic-storage-migrations
+title: Design scoped and dynamic storage migration providers
+skill_path: data_publishing/meta_table_migrations
+case_set_version: v2
+authored_against_sdk_version: 4.4.5
+target_sdk_version: 4.4.5
+tags:
+- meta_table_migrations
+- scoped-provider
+- dynamic-storage
+- alembic
+- bars
+- difficult
+difficulty: hard
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+- Uses one shared migration history while allowing scoped revisions for selected optional tables
+- Includes FK dependency metadata without migrating dependency tables owned elsewhere
+- Handles dynamic storage whose identity depends on registered source metadata
+- Fails clearly before revision/upgrade when required dynamic source metadata is missing
+evaluator:
+  name: mainsequence.pending-evaluator-v1
+  method: none
+  status: not_evaluable
+case_source_of_truth:
+  kind: reference-implementation
+  package: binance-connectors
+  version: 0.1.21
+  repository: https://github.com/mainsequence-projects/binance-connectors
+  ref: refs/tags/v0.1.21
+  tree_url: https://github.com/mainsequence-projects/binance-connectors/tree/v0.1.21
+  files:
+  - path: src/migrations/__init__.py
+    symbols:
+    - BinanceConnectorsAlembicVersion
+    - SHARED_PROVIDER_KWARGS
+    - project_target_metadata_for_models
+    - project_include_object_hook
+    - migration
+  - path: src/migrations/registry.py
+    symbols:
+    - METATABLE_PROVIDER_MODELS
+    - metatable_provider_models
+  - path: src/migrations/scopes.py
+    symbols:
+    - resolve_scope
+    - build_scoped_provider
+    - active_scoped_provider
+  - path: src/portfolios/interpolated_prices_schema.py
+    symbols:
+    - dynamic_provider_env
+    - dynamic_storage_from_env
+    - assert_interpolated_prices_storage_registered
+  - path: src/portfolios/interpolated_prices_migration.py
+    symbols:
+    - DYNAMIC_INTERPOLATED_PRICES_STORAGE
+    - migration
+  - path: src/data_nodes/binance_bars_storage.py
+    symbols:
+    - SUPPORTED_BAR_FREQUENCIES
+    - kline_bars_storage
+    - trade_time_bars_storage
+supporting_context:
+  sdk_skill_source:
+  - https://github.com/mainsequence-sdk/mainsequence-sdk/blob/3b5a20a344cec0c960351dc3c601d32a66a8b46e/agent_scaffold/skills/data_publishing/meta_table_migrations/SKILL.md
+  - https://github.com/mainsequence-sdk/mainsequence-sdk/blob/3b5a20a344cec0c960351dc3c601d32a66a8b46e/agent_scaffold/skills/data_publishing/meta_tables/SKILL.md
+  training_notes:
+  - experiments/mainsequence-sdk/sources/binance-connectors/metatables-and-datanodes-case-plan.md

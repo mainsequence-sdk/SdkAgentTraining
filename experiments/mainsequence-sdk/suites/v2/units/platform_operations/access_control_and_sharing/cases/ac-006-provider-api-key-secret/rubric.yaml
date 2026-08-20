@@ -1,0 +1,32 @@
+passing_score: 0.9
+hard_fail_checks:
+  - id: must-use-secret
+    description: Must choose `Secret`, not `Constant`, for the provider API key.
+  - id: no-secret-exposure
+    description: Must not expose the secret value in code, logs, API responses, public config, or connection JSON.
+  - id: sdk-read
+    description: Must read the value through the SDK by secret name.
+criteria:
+  - id: name-idempotency
+    weight: 0.18
+    description: Checks for an existing secret by name before creating or reconciling it.
+  - id: cli-workflow
+    weight: 0.12
+    description: Mentions name-filtered CLI listing for lookup and creates only missing secrets.
+  - id: missing-empty-handling
+    weight: 0.18
+    description: Fails clearly when the secret is missing, empty, or blank.
+  - id: access-boundary
+    weight: 0.16
+    description: Verifies access to the `Secret` resource for consumers instead of assuming code access is enough.
+  - id: separation-of-concerns
+    weight: 0.14
+    description: Separates provider request construction from access-control and configuration ownership.
+  - id: security-rationale
+    weight: 0.12
+    description: Explains why an API key is sensitive and why `Constant` is inappropriate.
+  - id: practical-python
+    weight: 0.1
+    description: Provides a practical SDK read pattern with safe value extraction.
+notes:
+  - The case is answerable without live secret creation.

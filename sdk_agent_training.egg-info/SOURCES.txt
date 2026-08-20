@@ -1,7 +1,0 @@
-README.md
-pyproject.toml
-sdk_agent_training.egg-info/PKG-INFO
-sdk_agent_training.egg-info/SOURCES.txt
-sdk_agent_training.egg-info/dependency_links.txt
-sdk_agent_training.egg-info/requires.txt
-sdk_agent_training.egg-info/top_level.txt

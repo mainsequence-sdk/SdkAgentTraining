@@ -1,0 +1,54 @@
+id: dn-001-asset-risk-score-storage-first
+title: Build a storage-first asset risk score DataNode
+skill_path: data_publishing/data_nodes
+case_set_version: v2
+authored_against_sdk_version: 4.4.5
+target_sdk_version: 4.4.5
+tags:
+- data_nodes
+- platform-time-index-metatable
+- asset-identifier
+- storage-first
+- ms-markets
+difficulty: hard
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+- Defines a PlatformTimeIndexMetaTable storage contract before DataNode update logic
+- Uses asset_identifier as canonical asset identity with a storage-table FK
+- Keeps schema and published metadata out of DataNodeConfiguration
+- Requires nanosecond UTC time index, no duplicate index rows, and incremental UpdateStatistics behavior
+evaluator:
+  name: mainsequence.data-node-storage-first-manual-v1
+  method: human-review
+  status: manual_review_required
+case_source_of_truth:
+  kind: ms-markets-reference-implementation
+  package: ms-markets
+  version: 0.0.71
+  repository: https://github.com/mainsequence-projects/MainSequenceMarkets
+  ref: refs/tags/v0.0.71
+  tree_url: https://github.com/mainsequence-projects/MainSequenceMarkets/tree/v0.0.71
+  files:
+  - path: src/msm/data_nodes/assets/storage.py
+    symbols:
+    - AssetSnapshotsStorage
+  - path: src/msm/data_nodes/assets/asset_indexed.py
+    symbols:
+    - AssetIndexedDataNode
+    - AssetIndexedDataNodeConfiguration
+  - path: src/msm/data_nodes/assets/snapshots.py
+    symbols:
+    - AssetTimestampedDataNode
+    - AssetDataNodeConfiguration
+  - path: src/msm/models/assets/core.py
+    symbols:
+    - AssetTable
+supporting_context:
+  sdk_skill_source:
+  - https://github.com/mainsequence-sdk/mainsequence-sdk/blob/3b5a20a344cec0c960351dc3c601d32a66a8b46e/agent_scaffold/skills/data_publishing/data_nodes/SKILL.md
+  - https://github.com/mainsequence-sdk/mainsequence-sdk/blob/3b5a20a344cec0c960351dc3c601d32a66a8b46e/agent_scaffold/skills/data_publishing/meta_tables/SKILL.md
+  training_notes:
+  - experiments/mainsequence-sdk/sources/ms-markets/metatables-and-datanodes-case-plan.md

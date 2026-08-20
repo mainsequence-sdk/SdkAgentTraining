@@ -1,0 +1,14 @@
+schema_version: 1
+id: instruction-response-v1
+engine: dspy
+payload:
+  signature:
+    inputs:
+      global_context: str
+      instruction_context: str
+      task: str
+    outputs:
+      response: str
+  module: predict
+  adapter: chat
+  state_format: json

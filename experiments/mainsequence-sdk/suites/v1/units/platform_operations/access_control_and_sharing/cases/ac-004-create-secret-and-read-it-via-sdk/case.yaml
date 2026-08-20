@@ -1,0 +1,27 @@
+id: ac-004-create-secret-and-read-it-via-sdk
+title: Create a Secret from the CLI and read it back with the SDK
+skill_path: platform_operations/access_control_and_sharing
+case_set_version: v1
+authored_against_sdk_version: 3.17.33
+tags:
+- secret
+- cli
+- sdk
+- credentials
+- runtime-config
+difficulty: easy
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+- Uses the secret creation CLI command
+- Reads the created secret with the SDK
+- Keeps the workflow on the same secret name across both surfaces
+source_docs:
+- docs/knowledge/infrastructure/constants_and_secrets.md
+- docs/cli/index.md
+evaluator:
+  name: mainsequence.pending-evaluator-v1
+  method: none
+  status: not_evaluable

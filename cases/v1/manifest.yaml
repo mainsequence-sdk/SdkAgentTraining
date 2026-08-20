@@ -1,5 +1,0 @@
-case_set_version: v1
-description: First authored case-set version for Main Sequence skill evaluation.
-notes:
-- This case set is versioned independently from SDK snapshots.
-- SDK compatibility is declared under sdk/<sdk-version>/case-map.yaml.

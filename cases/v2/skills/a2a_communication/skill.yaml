@@ -1,8 +1,0 @@
-skill_path: a2a_communication
-case_set_version: v2
-target_sdk_version: 4.4.5
-source_sdk_skill: sdk/4.4.5/skills/a2a_communication/source/SKILL.md
-display_name: a2a_communication
-description: Canonical guidance for discovering other agents and communicating with
-  them through Astro's A2A flow.
-migration_status: pending_revalidation

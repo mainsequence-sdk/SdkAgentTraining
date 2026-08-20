@@ -1,0 +1,27 @@
+passing_score: 0.88
+hard_fail_checks:
+- id: sidecar-not-canonical-mutation
+  description: Must not modify or duplicate canonical asset ownership for exchange-only metadata.
+- id: one-to-one-asset-link
+  description: Must preserve a one-to-one relationship to canonical asset identity.
+- id: migration-first
+  description: Must route platform-managed table creation and schema changes through migrations.
+criteria:
+- id: row-grain-and-keys
+  weight: 0.24
+  description: Defines one row per canonical asset with primary/business keys and collision-aware exchange identity.
+- id: relationship-design
+  weight: 0.2
+  description: Uses SQLAlchemy FK metadata with intentional delete behavior and no stale MetaTableForeignKey pattern.
+- id: lookup-and-indexes
+  weight: 0.18
+  description: Provides useful lookup indexes for canonical unique identifier, exchange symbol, and asset kind/family.
+- id: metadata-quality
+  weight: 0.16
+  description: Includes project-prefixed naming, table descriptions, column labels, and descriptions.
+- id: operations
+  weight: 0.12
+  description: Describes governed upsert/search behavior and clear not-migrated failure modes.
+- id: non-goals
+  weight: 0.1
+  description: Rejects DataNode use for current reference metadata, raw SQL, runtime register, and ticker-only identity.

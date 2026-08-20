@@ -1,0 +1,56 @@
+id: mt-001-calendar-relational-metatables
+title: Design relational MetaTables for market calendars
+skill_path: data_publishing/meta_tables
+case_set_version: v2
+authored_against_sdk_version: 4.4.5
+target_sdk_version: 4.4.5
+tags:
+- meta_tables
+- relational-modeling
+- foreign-keys
+- indexes
+- ms-markets
+difficulty: hard
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+- Chooses MetaTables, not DataNodes, for durable calendar reference data
+- Defines row grain, primary keys, business keys, foreign keys, unique indexes, and lookup indexes
+- Uses project-prefixed table names, intention-rich descriptions, and column info metadata
+- Routes schema lifecycle to the MetaTable migration skill and avoids runtime registration
+evaluator:
+  name: mainsequence.pending-evaluator-v1
+  method: none
+  status: not_evaluable
+case_source_of_truth:
+  kind: ms-markets-reference-implementation
+  package: ms-markets
+  version: 0.0.71
+  repository: https://github.com/mainsequence-projects/MainSequenceMarkets
+  ref: refs/tags/v0.0.71
+  tree_url: https://github.com/mainsequence-projects/MainSequenceMarkets/tree/v0.0.71
+  files:
+  - path: src/msm/models/calendars/core.py
+    symbols:
+    - CalendarTable
+  - path: src/msm/models/calendars/dates.py
+    symbols:
+    - CalendarDateTable
+  - path: src/msm/models/calendars/sessions.py
+    symbols:
+    - CalendarSessionTable
+  - path: src/msm/models/calendars/events.py
+    symbols:
+    - CalendarEventTable
+  - path: src/msm/repositories/calendars/core.py
+    symbols:
+    - build_create_calendar_operation
+    - build_update_calendar_operation
+supporting_context:
+  sdk_skill_source:
+  - https://github.com/mainsequence-sdk/mainsequence-sdk/blob/3b5a20a344cec0c960351dc3c601d32a66a8b46e/agent_scaffold/skills/data_publishing/meta_tables/SKILL.md
+  - https://github.com/mainsequence-sdk/mainsequence-sdk/blob/3b5a20a344cec0c960351dc3c601d32a66a8b46e/agent_scaffold/skills/data_publishing/meta_table_migrations/SKILL.md
+  training_notes:
+  - experiments/mainsequence-sdk/sources/ms-markets/metatables-and-datanodes-case-plan.md

@@ -1,0 +1,29 @@
+passing_score: 0.88
+hard_fail_checks:
+- id: no-raw-secrets
+  description: Must explicitly reject storing raw API keys or API secrets.
+- id: account-sidecar-grain
+  description: Must link current detail rows to canonical account identity rather than use credentials as primary identity.
+- id: no-time-series-mixing
+  description: Must keep timestamped balances and positions out of current account detail tables.
+- id: migration-first
+  description: Must not recommend runtime direct registration for platform-managed tables.
+criteria:
+- id: table-shape
+  weight: 0.22
+  description: Defines account-family-specific sidecar contracts with correct row grain and useful fields.
+- id: relationships
+  weight: 0.2
+  description: Uses canonical account FK/PK relationship with intentional delete semantics.
+- id: indexes-and-lookups
+  weight: 0.16
+  description: Includes account unique identifier and API fingerprint lookup/uniqueness choices.
+- id: metadata-quality
+  weight: 0.16
+  description: Uses stable identity, project naming, table description, labels, and column descriptions.
+- id: operations-and-failure
+  weight: 0.14
+  description: Describes governed upsert/search behavior and clear failure when tables are not migrated.
+- id: non-goals
+  weight: 0.12
+  description: Rejects raw credentials, timestamped facts, runtime register, generic JSON dumping, and credential-keyed identity.

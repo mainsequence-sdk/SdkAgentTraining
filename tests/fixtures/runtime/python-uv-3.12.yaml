@@ -1,0 +1,13 @@
+schema_version: 1
+id: python-uv-3.12
+backend: docker
+python: "3.12"
+image: ghcr.io/astral-sh/uv:python3.12-bookworm-slim@sha256:e5b65587bce7de595f299855d7385fe7fca39b8a74baa261ba1b7147afa78e58
+network: none
+user: "10001:10001"
+resources:
+  cpus: 2
+  memory_mb: 4096
+  pids: 256
+  timeout_seconds: 1800
+  maximum_output_bytes: 104857600

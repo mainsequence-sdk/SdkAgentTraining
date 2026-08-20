@@ -1,0 +1,6 @@
+schema_version: 1
+id: raw-control
+engine: raw
+payload:
+  template: system-user-v1
+  response_field: response

@@ -1,0 +1,33 @@
+schema_version: 1
+id: alpha
+display_name: Alpha repository
+source:
+  type: github
+  repository_url: https://github.com/example/alpha
+  ref:
+    type: tag
+    value: v1.0.0
+  fetch:
+    submodules: false
+    git_lfs: false
+instruction_bundles:
+  - id: project-skills
+    display_name: Project skills
+    global_context:
+      - id: agent-guidance
+        source_path: .agents/AGENTS.md
+        required: true
+    units:
+      sources:
+        - id: skills
+          type: directory
+          root: .agents/skills
+          locator:
+            filename: SKILL.md
+            recursive: true
+            include: ["**/SKILL.md"]
+            exclude: []
+            follow_symlinks: false
+          logical_id:
+            prefix: ""
+          allow_empty: false

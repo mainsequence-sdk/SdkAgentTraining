@@ -1,137 +1,81 @@
-# Training Conventions
+# Framework and Experiment Conventions
 
-## Core Principle
+## Ownership
 
-Keep authored cases separate from copied SDK source.
+- Core owns neutral schemas, locks, lifecycle, storage, execution, evaluation
+  contracts, and reporting.
+- Program modules own rendering/compilation behavior.
+- Provider modules own model transport and binding details.
+- Experiment workspaces own targets, sources, co-located suite/split data,
+  profiles, and target-specific trusted evaluators.
+- External storage owns all generated/runtime evidence.
 
-- `cases/` holds authored case sets
-- `sdk/` holds copied library snapshots
-- `sdk/<version>/case-map.yaml` declares which case set a skill uses for that SDK version
-- `runs/` holds generated outputs
+An evaluated library must never appear in core dependencies or defaults.
 
-## Case-Set Layout
+## Reproducible source identity
 
-Each case-set version lives under:
+- Author a GitHub HTTPS URL plus tag or full commit.
+- Resolve tags to a full commit before execution.
+- Snapshot only exact configured paths.
+- Reject symlinks, traversal, ambiguous unit ids, fallback-root probing, and
+  source/snapshot hash mismatches.
+- Identify every case through `(suite, version, bundle, unit, case)` and every
+  run through locked target/snapshot/program/provider/runtime/evaluator
+  identities.
 
-```text
-cases/<case-set-version>/
-├── manifest.yaml
-└── skills/
-    └── <skill-path>/
-        ├── README.md
-        ├── skill.yaml
-        └── cases/
-            └── <case-id>/
-```
+## Cases and evaluators
 
-Each concrete case should live in its own folder:
-
-```text
-cases/<case-set-version>/skills/<skill-path>/cases/<case-id>/
-├── case.yaml
-├── prompt.md
-├── expected/
-│   ├── response.md
-│   └── artifacts/
-└── rubric.yaml
-```
-
-Recommended `case.yaml` fields:
-
-- `id`
-- `title`
-- `skill_path`
-- `case_set_version`
-- `authored_against_sdk_version`
-- `tags`
-- `difficulty`
-- `requires`
-- `success`
-- `case_source_of_truth` when the case is derived from real implementation files
-- `supporting_context` for SDK skill snapshots, planning docs, and evaluator specs
-
-`case_source_of_truth` must point to a git repository, package version, and
-repository tag/ref for the implementation being evaluated, plus
-repository-relative source files and, when possible, symbols. Do not use local
-checkout paths, docs, or SDK skill instructions as the case source of truth for
-implementation-derived cases. Docs and SDK skill instructions belong in
-`supporting_context`.
-
-## SDK Snapshot Layout
-
-Each installed SDK snapshot lives under:
-
-```text
-sdk/<sdk-version>/
-├── manifest.json
-├── source-of-truth.yaml
-├── case-map.yaml
-├── agent_scaffold/AGENTS.md
-└── skills/<skill-path>/source/SKILL.md
-```
-
-The snapshot should contain copied source and mapping metadata only.
-
-`source-of-truth.yaml` is required for auditable snapshots. It should identify:
-
-- public git repository
-- git ref or tag
-- resolved commit SHA when verified
-- verification status and method
-- local copied snapshot root
-
-Do not store authored cases under `sdk/<sdk-version>/`.
-
-Do not store copied SDK `SKILL.md` files under `cases/<case-set-version>/`.
-
-Use this ownership rule:
-
-- `cases/<case-set-version>/skills/<skill-path>/`
-  Authored case-bank material only.
-- `sdk/<sdk-version>/skills/<skill-path>/source/SKILL.md`
-  Exact copied SDK skill source only.
-
-## Case Mapping
-
-Compatibility is declared in:
-
-```text
-sdk/<sdk-version>/case-map.yaml
-```
-
-Recommended shape:
+A case directory contains `case.yaml`, `prompt.md`, `expected/`, and
+`rubric.yaml`. Its evaluator block is mandatory:
 
 ```yaml
-sdk_version: 4.4.5
-source_of_truth_file: source-of-truth.yaml
-default_case_set: v2
-skills:
-  platform_operations/orchestration_and_releases:
-    case_set: v2
-  data_publishing/data_nodes:
-    case_set: v2
+evaluator:
+  name: example.correctness-v1
+  method: rule-based-checklist
+  status: active
 ```
 
-This allows:
+Supported status/method pairs are:
 
-- one authored case bank to serve multiple SDK versions
-- skill-by-skill remapping when a newer SDK needs a newer case-set version
+- `active` / `rule-based-checklist`;
+- `manual_review_required` / `human-review`;
+- `not_evaluable` / `none`.
 
-## Run Layout
+Registration uses the exact namespaced name. Every active evaluator must pass
+positive, negative, and adversarial calibration. Missing coverage is a preflight
+error, not a zero. Unscored generation has null score/pass fields.
 
-Each execution goes under:
+Evaluator profiles point to trusted Python modules inside their workspace. The
+generic wheel loads only the explicitly selected profile; target-specific code
+must never live under `src/ms_agent_eval/`.
 
-```text
-runs/sdk/<sdk-version>/<agent>/<model>/<timestamp>/
-```
+## Dataset governance
 
-Recommended contents:
+- Split by leakage-resistant group, never individual paraphrase alone.
+- Optimization sees train and development only.
+- Publish a content-addressed JSON compiled artifact before opening held-out
+  test/challenge content.
+- Report development and held-out results separately.
+- Promote explicitly after held-out non-regression and anti-gaming checks.
+- Never use test feedback to select a candidate or edit its prompt.
 
-```text
-manifest.json
-skills/
-evaluations/
-logs/
-```
+## Runtime and secrets
 
-Store one `response.md`, artifact set, and evaluation file per executed case inside that run folder.
+- Python 3.12 is the baseline.
+- Execute repository code only in a digest-pinned Docker runtime.
+- Default run network is `none`; build/network access must be separately scoped.
+- Pass secrets by reference at runtime, never through committed YAML, locks,
+  rendered-message evidence, or reports.
+- Use a non-root user, read-only root filesystem, dropped capabilities, resource
+  limits, bounded output, and automatic container removal.
+
+## Results
+
+Do not commit clones, extracted snapshots, prompts sent to models, responses,
+logs, patches, evaluations, optimizer candidates, SQLite databases, or generated
+reports. Store them under the selected external root and reference them by
+content id.
+
+Reports must show suite/version, target/commit/snapshot, bundle/unit,
+program/engine/adapter/compiled artifact, split, provider/model/parameters, and
+evaluator/version. Missing legacy identity is labeled `unresolved`.

@@ -1,0 +1,12 @@
+schema_version: 1
+id: gepa-small
+engine: dspy
+optimizer: GEPA
+parameters:
+  reflection_minibatch_size: 2
+budgets:
+  model_calls: 20
+  configured_cost: 1.0
+  tokens: 10000
+  wall_seconds: 300
+  concurrency: 1

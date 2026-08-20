@@ -1,0 +1,53 @@
+id: mt-005-account-detail-sidecar-metatables
+title: Design account detail sidecar MetaTables
+skill_path: data_publishing/meta_tables
+case_set_version: v2
+authored_against_sdk_version: 4.4.5
+target_sdk_version: 4.4.5
+tags:
+- meta_tables
+- accounts
+- sidecar
+- credentials
+- exchange-metadata
+difficulty: medium
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+- Models exchange account details as current sidecar rows linked to canonical accounts
+- Keeps raw API secrets and timestamped balances out of the sidecar tables
+- Uses separate contracts for account families when fields diverge
+- Routes contract ownership through migration-managed MetaTables
+evaluator:
+  name: mainsequence.pending-evaluator-v1
+  method: none
+  status: not_evaluable
+case_source_of_truth:
+  kind: reference-implementation
+  package: binance-connectors
+  version: 0.1.21
+  repository: https://github.com/mainsequence-projects/binance-connectors
+  ref: refs/tags/v0.1.21
+  tree_url: https://github.com/mainsequence-projects/binance-connectors/tree/v0.1.21
+  files:
+  - path: src/account/binance_account_details.py
+    symbols:
+    - BinanceSpotAccountDetails
+    - BinanceFuturesAccountDetail
+    - _BinanceAccountDetailCommon
+  - path: src/account/services.py
+    symbols:
+    - read_binance_account
+    - _detail_table_and_values
+    - register_binance_account
+  - path: src/migrations/registry.py
+    symbols:
+    - metatable_provider_models
+supporting_context:
+  sdk_skill_source:
+  - https://github.com/mainsequence-sdk/mainsequence-sdk/blob/3b5a20a344cec0c960351dc3c601d32a66a8b46e/agent_scaffold/skills/data_publishing/meta_tables/SKILL.md
+  - https://github.com/mainsequence-sdk/mainsequence-sdk/blob/3b5a20a344cec0c960351dc3c601d32a66a8b46e/agent_scaffold/skills/data_publishing/meta_table_migrations/SKILL.md
+  training_notes:
+  - experiments/mainsequence-sdk/sources/binance-connectors/metatables-and-datanodes-case-plan.md

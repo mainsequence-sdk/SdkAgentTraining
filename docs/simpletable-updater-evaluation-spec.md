@@ -4,7 +4,7 @@ This document defines how to evaluate Main Sequence `SimpleTableUpdater` constru
 
 Current checked SDK basis: `mainsequence==3.17.38`
 
-SDK `4.4.5` is now the active snapshot for `cases/v2`; this spec is carried forward and must be revalidated against the 4.x SDK code before it is treated as current for new SimpleTableUpdater construction cases.
+SDK `4.4.5` is now the active snapshot for `experiments/mainsequence-sdk/suites/v2`; this spec is carried forward and must be revalidated against the 4.x SDK code before it is treated as current for new SimpleTableUpdater construction cases.
 
 Primary source-of-truth inputs:
 

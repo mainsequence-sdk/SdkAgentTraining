@@ -1,107 +1,61 @@
-# Ollama Workflow
+# Ollama Provider Workflow
 
-This repository can run one training case against one Ollama model and save the result into the versioned `runs/` tree.
+Ollama is an optional provider binding, not a framework default. The evaluated
+target and cases are selected by an experiment lock; the provider does not read
+an installed target package or write into `runs/`.
 
-## Assumptions
+## Configuration
 
-- Ollama is reachable at `http://192.168.1.10:11434`
-- the model is already installed on that Ollama server
-- the case already exists under `cases/`
+Commit only a credential-free provider example:
 
-The runner defaults to `http://192.168.1.10:11434`. To change it, set `OLLAMA_BASE_URL` or pass `--base-url`.
+```yaml
+schema_version: 1
+id: local-ollama.example
+driver: ollama
+model: model-name
+parameters:
+  base_url_env: OLLAMA_BASE_URL
+  temperature: 0.0
+  timeout_seconds: 300
+```
 
-## One-case workflow
-
-Run one case against one model:
+Set runtime values outside Git:
 
 ```bash
-.venv/bin/python scripts/run_ollama_case.py \
-  --model ms-reasoning:latest \
-  --case or-001-recurring-artifact-job
+export OLLAMA_BASE_URL=http://127.0.0.1:11434
+export OLLAMA_MODEL=model-name
+export MS_AGENT_EVAL_DATA_ROOT=/absolute/path/outside/the/repository
 ```
 
-Another model:
+`OllamaProvider` validates a credential-free HTTP(S) endpoint, sends the exact
+`/api/chat` payload for raw programs, normalizes token usage, and exposes an
+observed DSPy binding. Rendered messages plus request/response bodies are stored
+through the external artifact store. DSPy cache and LiteLLM retries are disabled
+so framework lifecycle/budget policy remains authoritative.
+
+## Raw versus DSPy
+
+Use the same locked case, snapshot, model, and parameters for comparisons:
+
+- raw programs preserve exact message templates and are the replay/control arm;
+- DSPy programs use the typed `InstructionResponse` signature and observed chat
+  adapter;
+- the report must retain distinct engine/program/adapter identities.
+
+DSPy optimization is a different experiment. It cannot compile while running a
+benchmark and cannot access test/challenge cases until candidate publication.
+
+## Live acceptance
+
+Contract tests use a deterministic transport and require no server. To exercise a
+real configured model:
 
 ```bash
-.venv/bin/python scripts/run_ollama_case.py \
-  --model ms-fast:latest \
-  --case or-001-recurring-artifact-job
+OLLAMA_BASE_URL=http://127.0.0.1:11434 \
+OLLAMA_MODEL=model-name \
+uv run pytest -m ollama
 ```
 
-The runner will:
-
-1. read the installed SDK version
-2. resolve the case id through `sdk/<version>/case-map.yaml`
-3. load the authored case from the mapped case-set version
-4. load `AGENTS.md` and the copied skill `SKILL.md` from the matching SDK snapshot
-5. send the prompt to Ollama
-6. create a run folder under `runs/sdk/<version>/ollama/<model>/<timestamp>/`
-7. save the raw response
-8. run the automatic evaluator for the case
-
-By default, the saved evaluation records:
-
-- evaluator name: `codex-heuristic-v1`
-- evaluator kind: `rule-based`
-
-You can override that when needed:
-
-```bash
-.venv/bin/python scripts/run_ollama_case.py \
-  --model ms-reasoning:latest \
-  --case or-001-recurring-artifact-job \
-  --evaluator-name codex-manual-review \
-  --evaluator-kind human-review
-```
-
-## Output layout
-
-Example:
-
-```text
-runs/sdk/4.4.5/ollama/ms-reasoning-latest/2026-04-12T16-20-00Z/
-├── manifest.json
-├── evaluations/
-│   └── or-001-recurring-artifact-job.json
-├── logs/
-│   └── platform_operations/orchestration_and_releases/or-001-recurring-artifact-job/
-│       ├── ollama_request.json
-│       └── ollama_response.json
-└── skills/
-    └── platform_operations/orchestration_and_releases/or-001-recurring-artifact-job/
-        ├── response.md
-        ├── system_prompt.md
-        └── user_prompt.md
-```
-
-## What is being tested
-
-For `or-001-recurring-artifact-job`, this is an offline response-quality test.
-
-It checks whether the model:
-
-- chooses `scheduled_jobs.yaml`
-- uses `Artifact` correctly
-- requires pinned images
-- treats `--strict` carefully
-- includes verification steps
-
-It is not a live platform execution test.
-
-## Compare multiple models
-
-Run the same case repeatedly:
-
-```bash
-.venv/bin/python scripts/run_ollama_case.py --model ms-fast:latest --case or-001-recurring-artifact-job
-.venv/bin/python scripts/run_ollama_case.py --model ms-reasoning:latest --case or-001-recurring-artifact-job
-.venv/bin/python scripts/run_ollama_case.py --model deepseek-r1:32b --case or-001-recurring-artifact-job
-```
-
-Then compare the `evaluations/or-001-recurring-artifact-job.json` files under each run.
-
-Each evaluation JSON now includes:
-
-- `evaluator.name`
-- `evaluator.kind`
-- `evaluator.evaluated_at`
+Until both raw and DSPy live calls pass and their captured payloads are reviewed,
+the provider remains opt-in rather than production-accepted. No fixed LAN URL,
+model name, or relabelable evaluator identity is embedded in the framework.

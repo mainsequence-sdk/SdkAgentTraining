@@ -1,0 +1,5 @@
+passing_score: 1.0
+criteria:
+  - id: correctness
+    weight: 1.0
+    description: The response is correct.

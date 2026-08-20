@@ -1,0 +1,10 @@
+schema_version: 1
+id: alpha-v1--synthetic
+snapshot_id: alpha-v1
+suite_id: synthetic
+suite_version: "1.0"
+cases:
+  - case_id: coding-001
+    bundle_id: project-skills
+    unit_id: coding
+content_hash: sha256:0e9f4877ff3bfc2be4080d17cfdc70810dcce238a9ef93abd672efc329454403

@@ -1,0 +1,29 @@
+passing_score: 0.92
+hard_fail_checks:
+- id: shared-history
+  description: Must keep scoped and dynamic providers on one coherent migration history/version table unless explicitly justified.
+- id: dependency-exclusion
+  description: Must include FK dependency metadata without migrating dependency tables owned by another package.
+- id: dynamic-source-metadata
+  description: Must require source table UID/cadence and related identity inputs before building dynamic storage.
+- id: no-runtime-ddl
+  description: Must reject direct registration or runtime DDL from DataNode or portfolio execution.
+criteria:
+- id: full-provider-design
+  weight: 0.18
+  description: Defines shared provider settings, Alembic version table, target metadata, registry, and namespace.
+- id: scoped-provider-design
+  weight: 0.2
+  description: Resolves named/explicit scopes, deduplicates models, and changes only model scope/metadata.
+- id: optional-storage-safety
+  weight: 0.14
+  description: Handles finite supported bar frequencies without polluting the default provider.
+- id: dynamic-provider-design
+  weight: 0.2
+  description: Builds source-dependent storage from explicit source metadata and fails clearly when absent.
+- id: commands-and-verification
+  weight: 0.16
+  description: Gives current/revision/upgrade lifecycle and verifies registered/bound storage before dependent runs.
+- id: non-goals
+  weight: 0.12
+  description: Rejects direct register, custom backend payloads, runtime DDL, unrelated version streams, and migrating external dependency tables.

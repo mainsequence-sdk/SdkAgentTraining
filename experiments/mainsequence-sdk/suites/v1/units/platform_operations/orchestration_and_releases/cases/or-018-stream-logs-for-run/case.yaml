@@ -1,0 +1,25 @@
+id: or-018-stream-logs-for-run
+title: Stream logs for one job run
+skill_path: platform_operations/orchestration_and_releases
+case_set_version: v1
+authored_against_sdk_version: 3.17.33
+tags:
+- cli
+- jobs
+- runs
+- logs
+difficulty: easy
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+- Uses jobs runs logs 501
+- Includes max-wait-seconds for operational verification
+source_docs:
+- docs/tutorial/scheduling_jobs.md
+- docs/knowledge/infrastructure/scheduling_jobs.md
+evaluator:
+  name: mainsequence.pending-evaluator-v1
+  method: none
+  status: not_evaluable

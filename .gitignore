@@ -2,3 +2,10 @@
 __pycache__/
 .pytest_cache/
 .ruff_cache/
+*.egg-info/
+.env
+*.sqlite
+*.sqlite3
+/var/
+/results/
+/snapshots/

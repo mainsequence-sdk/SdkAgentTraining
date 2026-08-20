@@ -1,0 +1,72 @@
+id: dn-004-exchange-bars-fixed-frequency-storage
+title: Design fixed-frequency exchange bar DataNodes
+skill_path: data_publishing/data_nodes
+case_set_version: v2
+authored_against_sdk_version: 4.4.5
+target_sdk_version: 4.4.5
+tags:
+- data_nodes
+- bars
+- fixed-frequency-storage
+- asset-identifier
+- incremental-updates
+- difficult
+difficulty: hard
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+- Separates finite migrated storage contracts from runtime update execution
+- Keeps bar frequency and output identity hash-relevant while treating mirror and memory controls as runtime behavior
+- Uses asset-scoped incremental update windows and returns an empty DataFrame for no-op runs
+- Produces time-first asset-indexed output that satisfies current SDK validation rules
+evaluator:
+  name: mainsequence.data-node-storage-first-manual-v1
+  method: human-review
+  status: manual_review_required
+case_source_of_truth:
+  kind: reference-implementation
+  package: binance-connectors
+  version: 0.1.21
+  repository: https://github.com/mainsequence-projects/binance-connectors
+  ref: refs/tags/v0.1.21
+  tree_url: https://github.com/mainsequence-projects/binance-connectors/tree/v0.1.21
+  files:
+  - path: src/data_nodes/binance_bars_storage.py
+    symbols:
+    - SUPPORTED_BAR_FREQUENCIES
+    - BinanceTradeImbalanceBarsStorage
+    - kline_bars_storage
+    - trade_time_bars_storage
+    - binance_bars_storage_models
+  - path: src/data_nodes/binance_bars.py
+    symbols:
+    - BinanceBarsBaseConfig
+    - BinanceKlineBarsConfig
+    - BinanceTradeTimeBarsConfig
+    - BaseBinanceBarsNode
+    - BinanceKlineBarsNode
+    - BinanceTradeTimeBarsNode
+    - BinanceTradeImbalanceBarsNode
+  - path: src/data_nodes/binance_bars_support.py
+    symbols:
+    - BinanceAssetBinding
+    - _ensure_utc_ns_datetime_index
+    - _epoch_series_to_utc_ns
+  - path: src/binance_raw_locations.py
+    symbols:
+    - normalize_frequency_id
+    - parse_frequency_seconds
+    - kline_relative_location
+    - trade_relative_location
+  - path: src/binance_raw_storage.py
+    symbols:
+    - materialize_raw_zip_file
+    - MissingRawFile
+supporting_context:
+  sdk_skill_source:
+  - https://github.com/mainsequence-sdk/mainsequence-sdk/blob/3b5a20a344cec0c960351dc3c601d32a66a8b46e/agent_scaffold/skills/data_publishing/data_nodes/SKILL.md
+  - https://github.com/mainsequence-sdk/mainsequence-sdk/blob/3b5a20a344cec0c960351dc3c601d32a66a8b46e/agent_scaffold/skills/data_publishing/meta_tables/SKILL.md
+  training_notes:
+  - experiments/mainsequence-sdk/sources/binance-connectors/metatables-and-datanodes-case-plan.md

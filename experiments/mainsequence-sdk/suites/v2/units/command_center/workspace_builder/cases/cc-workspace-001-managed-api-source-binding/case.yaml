@@ -1,0 +1,45 @@
+id: cc-workspace-001-managed-api-source-binding
+title: Build a workspace with a managed API source widget feeding a tabular consumer
+skill_path: command_center/workspace_builder
+case_set_version: v2
+authored_against_sdk_version: 4.4.5
+target_sdk_version: 4.4.5
+tags:
+  - command-center
+  - workspace
+  - bindings
+  - connection-query
+  - managed-source
+difficulty: hard
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+  - Uses a connection-backed source widget instead of embedding backend route details in the consumer.
+  - Binds the source widget output to the consumer widget input through target-owned bindings.
+  - Keeps the hidden managed source linked to its owner widget.
+  - Distinguishes workspace JSON from runtime/user state.
+  - Lists the CLI and registry verification needed before mutating a real workspace.
+evaluator:
+  name: mainsequence.pending-evaluator-v1
+  method: none
+  status: not_evaluable
+case_source_of_truth:
+  kind: reference-implementation
+  package: ms-markets
+  version: 0.0.73
+  repository: https://github.com/mainsequence-projects/MainSequenceMarkets
+  ref: refs/tags/v0.0.73
+  tree_url: https://github.com/mainsequence-projects/MainSequenceMarkets/tree/v0.0.73
+  files:
+    - path: src/command_center/workspaces/asset_monitor.py
+      symbols:
+        - build_asset_monitor_workspace_document
+    - path: tests/msm/command_center/test_asset_monitor.py
+      symbols:
+        - test_build_asset_monitor_workspace_document_binds_dataset_to_seed_data
+supporting_context:
+  sdk_skill_source:
+    - https://github.com/mainsequence-sdk/mainsequence-sdk/blob/3b5a20a344cec0c960351dc3c601d32a66a8b46e/agent_scaffold/skills/command_center/workspace_builder/SKILL.md
+    - https://github.com/mainsequence-sdk/mainsequence-sdk/blob/3b5a20a344cec0c960351dc3c601d32a66a8b46e/agent_scaffold/skills/command_center/adapter_from_api/SKILL.md

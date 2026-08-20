@@ -1,0 +1,54 @@
+id: mt-002-pricing-market-data-bindings
+title: Design MetaTables for pricing market-data source bindings
+skill_path: data_publishing/meta_tables
+case_set_version: v2
+authored_against_sdk_version: 4.4.5
+target_sdk_version: 4.4.5
+tags:
+- meta_tables
+- compiled-sql
+- pricing
+- data-node-bindings
+- ms-markets
+difficulty: hard
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+- Uses MetaTables for named pricing market-data sets and concept bindings
+- Stores DataNode storage table UIDs as binding targets without treating storage identifiers as authoritative
+- Defines relationship constraints, uniqueness, lookup indexes, and governed operations
+- Separates curve/fixing observations as DataNodes from pricing source selection rows
+evaluator:
+  name: mainsequence.pending-evaluator-v1
+  method: none
+  status: not_evaluable
+case_source_of_truth:
+  kind: ms-markets-reference-implementation
+  package: ms-markets
+  version: 0.0.71
+  repository: https://github.com/mainsequence-projects/MainSequenceMarkets
+  ref: refs/tags/v0.0.71
+  tree_url: https://github.com/mainsequence-projects/MainSequenceMarkets/tree/v0.0.71
+  files:
+  - path: src/msm_pricing/models/market_data_bindings.py
+    symbols:
+    - PricingMarketDataSetTable
+    - PricingMarketDataSetBindingTable
+  - path: src/msm_pricing/api/market_data_bindings.py
+    symbols:
+    - PricingMarketDataSet
+    - PricingMarketDataSetBinding
+  - path: src/msm_pricing/data_nodes/curves/storage.py
+    symbols:
+    - DiscountCurvesStorage
+  - path: src/msm_pricing/data_nodes/index_fixings/storage.py
+    symbols:
+    - IndexFixingsStorage
+supporting_context:
+  sdk_skill_source:
+  - https://github.com/mainsequence-sdk/mainsequence-sdk/blob/3b5a20a344cec0c960351dc3c601d32a66a8b46e/agent_scaffold/skills/data_publishing/meta_tables/SKILL.md
+  - https://github.com/mainsequence-sdk/mainsequence-sdk/blob/3b5a20a344cec0c960351dc3c601d32a66a8b46e/agent_scaffold/skills/data_publishing/data_nodes/SKILL.md
+  training_notes:
+  - experiments/mainsequence-sdk/sources/ms-markets/metatables-and-datanodes-case-plan.md

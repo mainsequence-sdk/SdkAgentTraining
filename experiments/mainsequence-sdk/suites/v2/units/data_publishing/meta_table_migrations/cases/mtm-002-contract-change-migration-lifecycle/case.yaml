@@ -1,0 +1,51 @@
+id: mtm-002-contract-change-migration-lifecycle
+title: Handle an in-place MetaTable contract change safely
+skill_path: data_publishing/meta_table_migrations
+case_set_version: v2
+authored_against_sdk_version: 4.4.5
+target_sdk_version: 4.4.5
+tags:
+- metatable-migrations
+- alembic
+- contract-change
+- runtime-boundary
+difficulty: hard
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+- Treats an existing platform-managed MetaTable schema change as Alembic migration work
+- Creates a new revision instead of editing applied history or calling registration again
+- Uses provider-scoped commands and validates catalog finalization
+- Keeps runtime startup attach-only
+evaluator:
+  name: mainsequence.pending-evaluator-v1
+  method: none
+  status: not_evaluable
+case_source_of_truth:
+  kind: ms-markets-reference-implementation
+  package: ms-markets
+  version: 0.0.71
+  repository: https://github.com/mainsequence-projects/MainSequenceMarkets
+  ref: refs/tags/v0.0.71
+  tree_url: https://github.com/mainsequence-projects/MainSequenceMarkets/tree/v0.0.71
+  files:
+  - path: src/msm_pricing/models/curves.py
+    symbols:
+    - CurveTable
+  - path: src/msm_pricing/models/market_data_bindings.py
+    symbols:
+    - PricingMarketDataSetTable
+    - PricingMarketDataSetBindingTable
+  - path: src/msm/migrations/__init__.py
+    symbols:
+    - migration
+  - path: src/msm/models/registration.py
+    symbols:
+    - resolve_markets_meta_table_models
+    - build_markets_registration_requests
+supporting_context:
+  sdk_skill_source:
+  - https://github.com/mainsequence-sdk/mainsequence-sdk/blob/3b5a20a344cec0c960351dc3c601d32a66a8b46e/agent_scaffold/skills/data_publishing/meta_table_migrations/SKILL.md
+  - https://github.com/mainsequence-sdk/mainsequence-sdk/blob/3b5a20a344cec0c960351dc3c601d32a66a8b46e/agent_scaffold/skills/data_publishing/meta_tables/SKILL.md

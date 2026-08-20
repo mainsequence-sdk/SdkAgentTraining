@@ -1,0 +1,29 @@
+id: or-002-count-visible-projects
+title: Count organization-visible projects from the CLI
+skill_path: platform_operations/orchestration_and_releases
+case_set_version: v2
+authored_against_sdk_version: 3.17.33
+tags:
+- cli
+- counting
+- json
+- projects
+difficulty: easy
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+- Selects the correct CLI surface for organization-visible projects
+- Uses `--json` instead of counting rendered table rows
+- Counts the returned items rather than eyeballing output
+source_docs:
+- docs/cli/index.md
+- docs/knowledge/cli.md
+target_sdk_version: 4.4.5
+migrated_from_case_set: v1
+migration_status: pending_revalidation
+evaluator:
+  name: mainsequence.pending-evaluator-v1
+  method: none
+  status: not_evaluable

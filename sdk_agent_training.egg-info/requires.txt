@@ -1,6 +1,0 @@
-mainsequence==4.4.5
-pyyaml
-
-[dev]
-pytest>=8.3
-ruff>=0.6

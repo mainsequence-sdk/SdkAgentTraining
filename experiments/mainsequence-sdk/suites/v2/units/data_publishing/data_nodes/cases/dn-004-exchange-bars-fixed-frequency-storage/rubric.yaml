@@ -1,0 +1,29 @@
+passing_score: 0.9
+hard_fail_checks:
+- id: finite-storage-set
+  description: Must require a finite migrated storage set for supported frequencies rather than ad hoc runtime table creation.
+- id: asset-identity
+  description: Must use canonical asset unique_identifier as the stored asset dimension, not exchange ticker strings.
+- id: dataframe-contract
+  description: Must require time-first UTC nanosecond output and return an empty DataFrame for no-op updates.
+- id: migration-boundary
+  description: Must route new storage/frequency support through migrations, not DataNode runtime registration.
+criteria:
+- id: storage-contract
+  weight: 0.24
+  description: Defines frequency-specific time-indexed storage with cadence, table identity, asset FK, payload columns, and metadata.
+- id: config-boundary
+  weight: 0.18
+  description: Correctly classifies frequency, asset scope, mirror paths, workers, memory limits, and chunk sizes.
+- id: incremental-update
+  weight: 0.2
+  description: Uses per-asset update statistics, bounded date windows, limit-update time, and no full-history default.
+- id: raw-file-handling
+  weight: 0.14
+  description: Handles primary/mirror raw files, missing files, cleanup, and no-row behavior without hiding failures.
+- id: output-hygiene
+  weight: 0.14
+  description: Produces sorted, de-duplicated MultiIndex rows with valid dtypes and lowercase concise columns.
+- id: non-goals
+  weight: 0.1
+  description: Rejects ticker identity, runtime storage creation, direct register calls, returning None, and table policy in row data.

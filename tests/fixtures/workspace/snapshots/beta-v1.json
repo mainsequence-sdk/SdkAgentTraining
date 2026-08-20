@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "id": "beta-v1",
+  "target_id": "beta",
+  "repository_url": "https://github.com/example/beta",
+  "requested_ref": {
+    "type": "commit",
+    "value": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "resolved_commit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "target_specification_hash": "sha256:12f559477024a3aefe8fc42cfb2d367b780f03045fdeb03ce45a45155bcceb7b",
+  "extraction_configuration_hash": "sha256:4b1b4131a95f86e941eafa12fc280f4d4298394a397523c74b7e41cd812469ea",
+  "inventory_hash": "sha256:f7dcafeda3dcf927f84294b0099ef69aca1e22f35655a9482f440e9e798684a3",
+  "files": [
+    {
+      "source_path": "docs/agent/coding.md",
+      "snapshot_path": "content/docs/agent/coding.md",
+      "content_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "size_bytes": 18
+    }
+  ],
+  "units": [
+    {
+      "bundle_id": "project-skills",
+      "source_id": "manuals",
+      "unit_id": "coding",
+      "source_path": "docs/agent/coding.md",
+      "snapshot_path": "content/docs/agent/coding.md",
+      "content_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    }
+  ],
+  "content_hash": "sha256:43a8d54ab8a312570e729802e84727c8386f7cb3ad3996b32a6ee224d8e19415"
+}

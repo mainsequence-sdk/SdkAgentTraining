@@ -1,0 +1,9 @@
+schema_version: 1
+id: synthetic
+version: "1.0"
+split_manifest_id: synthetic-v1
+cases:
+  - id: coding-001
+    bundle_id: project-skills
+    unit_id: coding
+    path: suites/synthetic/units/coding/cases/coding-001

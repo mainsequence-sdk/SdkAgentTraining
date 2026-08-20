@@ -1,0 +1,27 @@
+id: or-045-write-dashboard-release-command
+title: Author the dashboard release command
+skill_path: platform_operations/orchestration_and_releases
+case_set_version: v1
+authored_against_sdk_version: 3.17.33
+tags:
+- cli
+- resources
+- releases
+- dashboard
+- authoring
+difficulty: medium
+requires:
+  network: false
+  auth: false
+  writes_code: false
+success:
+- Uses `project project_resource create_dashboard`
+- Includes a resource id
+- Includes a related image id
+source_docs:
+- docs/tutorial/dashboards/streamlit/streamlit_integration_2.md
+- docs/cli/index.md
+evaluator:
+  name: mainsequence.pending-evaluator-v1
+  method: none
+  status: not_evaluable
