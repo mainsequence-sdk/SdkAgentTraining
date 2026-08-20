@@ -1,15 +1,125 @@
-schema_version: 1
-id: mainsequence-agent-skills
-external_data_root_env: MS_AGENT_EVAL_DATA_ROOT
-roots:
-  targets: targets
-  snapshots: snapshots
-  suites: suites
-  compatibility: compatibility
-  programs: programs
-  providers: providers
-  runtimes: runtimes
-  evaluators: evaluators
-  optimizers: optimizers
-  storage: storage
-  plans: plans
+schema_version: 2
+
+workspace:
+  id: mainsequence-sdk-evaluation
+  # Optional. When omitted, runtime data lives in ~/ms_agent_eval/<workspace-id>.
+
+evaluation:
+  repository:
+    url: https://github.com/mainsequence-sdk/mainsequence-sdk
+    ref: v4.4.5
+  instructions:
+    global:
+      - agent_scaffold/AGENTS.md
+    skills:
+      directory: agent_scaffold/skills
+  case_builder:
+    dspy:
+      module: Predict
+      signature:
+        inputs:
+          global_context: str
+          skill_context: str
+          source_context: str
+          coverage_request: str
+          existing_case_summaries: list[str]
+        outputs:
+          case_spec: dict[str, object]
+          prompt: str
+          expected_response: str
+          rubric: dict[str, object]
+          expected_artifacts: dict[str, str]
+          source_paths: list[str]
+          leakage_group: str
+    model:
+      provider: ollama
+      name_env: MS_AGENT_EVAL_CASE_BUILDER_MODEL
+      endpoint_env: OLLAMA_BASE_URL
+      parameters:
+        temperature: 0.2
+    budget:
+      model_calls: 100
+      tokens: 500000
+    output:
+      drafts: external
+      promotion: explicit
+  cases:
+    directory: cases
+  splits:
+    file: cases/splits.yaml
+    policy:
+      seed: mainsequence-sdk-v4.4.5
+      train: 0.5
+      development: 0.2
+      test: 0.2
+      challenge: 0.1
+  judge:
+    dspy:
+      module: Predict
+      signature:
+        inputs:
+          task: str
+          skill_context: str
+          rubric: str
+          expected_response: str
+          expected_artifacts: str
+          candidate_response: str
+        outputs:
+          criterion_scores: dict[str, float]
+          hard_failures: list[str]
+          feedback: str
+    model:
+      provider: ollama
+      name_env: MS_AGENT_EVAL_JUDGE_MODEL
+      endpoint_env: OLLAMA_BASE_URL
+      parameters:
+        temperature: 0.0
+    calibration:
+      directory: judge-calibration
+    repetitions: 3
+
+experiments:
+  baseline:
+    mode: evaluate
+    solver:
+      dspy:
+        module: Predict
+        signature:
+          inputs:
+            global_context: str
+            skill_context: str
+            task: str
+          outputs:
+            response: str
+      model:
+        provider: ollama
+        name_env: MS_AGENT_EVAL_SOLVER_MODEL
+        endpoint_env: OLLAMA_BASE_URL
+        parameters:
+          temperature: 0.2
+    runtime:
+      type: response_only
+      python: "3.12"
+    repetitions: 1
+  optimize-few-shot:
+    mode: optimize
+    based_on: baseline
+    dataset:
+      train: train
+      development: development
+      final_evaluation: test
+    optimizer:
+      name: LabeledFewShot
+      parameters:
+        k: 2
+        seed: 0
+    budget:
+      solver:
+        model_calls: 100
+        tokens: 250000
+      judge:
+        model_calls: 300
+        tokens: 500000
+      wall_seconds: 1800
+    output:
+      compiled_program: content_addressed_json

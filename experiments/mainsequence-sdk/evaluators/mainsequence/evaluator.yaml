@@ -1,7 +1,0 @@
-schema_version: 1
-id: mainsequence-rules-v1
-module_path: evaluators/mainsequence/plugin.py
-factory: build_registry
-configuration:
-  calibration_case: suites/v2/units/platform_operations/orchestration_and_releases/cases/or-001-recurring-artifact-job
-  calibration_fixtures: evaluators/mainsequence/calibration

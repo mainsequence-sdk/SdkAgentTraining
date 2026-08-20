@@ -1,5 +1,5 @@
-"""Model-program implementations.
+"""Canonical typed DSPy programs for case building, solving, and judging."""
 
-Import a concrete engine from :mod:`ms_agent_eval.programs.raw` or, when the
-``dspy`` extra is installed, :mod:`ms_agent_eval.programs.dspy`.
-"""
+from . import dspy
+
+__all__ = ["dspy"]

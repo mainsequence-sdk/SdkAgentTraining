@@ -4,7 +4,7 @@ This document defines how to evaluate Main Sequence `DataNode` construction case
 
 Current checked SDK basis: `mainsequence==3.17.38`
 
-SDK `4.4.5` is now the active snapshot for `experiments/mainsequence-sdk/suites/v2`; this spec is carried forward and must be revalidated against the 4.x SDK code before it is treated as current for new DataNode construction cases.
+SDK `4.4.5` is the configured source for `experiments/mainsequence-sdk/workspace.yaml`; use this document only as a coverage request for the DSPy case builder, which must ground new DataNode cases in the active immutable snapshot.
 
 Primary source-of-truth inputs:
 
@@ -157,7 +157,7 @@ Recommended structure for DataNode-construction evaluations:
 {
   "case_id": "dn-001-example",
   "sdk_version": "3.17.38",
-  "method": "rule-based-checklist",
+  "judge": "workspace DSPy LLM judge",
   "passed": false,
   "hard_fail_checks": [
     {

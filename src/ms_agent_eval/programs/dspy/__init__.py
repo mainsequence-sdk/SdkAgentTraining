@@ -1,49 +1,38 @@
+from .budget import BudgetExceeded, BudgetLedger, BudgetLimits, BudgetSnapshot
 from .engine import (
-    DspyProgramEngine,
+    PROGRAM_SIGNATURES,
+    CaseBuilder,
+    DspyExecutionContract,
+    DspyExecutor,
     InstructionResponse,
-    create_program,
+    RubricJudge,
+    create_case_builder_program,
+    create_judge_program,
+    create_solver_program,
     load_state_json,
+    program_hash,
     program_state,
     save_state_json,
 )
 from .observed_lm import ObservedDspyLM
-from .metric import DspyMetricAdapter, MetricEvaluationError
-from .budget import BudgetExceeded, BudgetLedger, BudgetLimits, BudgetSnapshot
-from .optimization import (
-    CompiledCandidate,
-    GovernedDspyOptimizer,
-    HeldOutComparison,
-    HeldOutDataset,
-    OptimizationCase,
-    OptimizationLock,
-    OptimizerDatasetView,
-    PromotionRecord,
-    ProtectedSplitDataset,
-)
 
 __all__ = [
     "BudgetExceeded",
     "BudgetLedger",
     "BudgetLimits",
     "BudgetSnapshot",
-    "CompiledCandidate",
-    "DspyProgramEngine",
-    "DspyMetricAdapter",
-    "GovernedDspyOptimizer",
-    "HeldOutComparison",
-    "HeldOutDataset",
+    "CaseBuilder",
+    "DspyExecutionContract",
+    "DspyExecutor",
     "InstructionResponse",
-    "MetricEvaluationError",
     "ObservedDspyLM",
-    "OptimizationCase",
-    "OptimizationLock",
-    "OptimizerDatasetView",
-    "PromotionRecord",
-    "ProtectedSplitDataset",
-    "create_program",
+    "PROGRAM_SIGNATURES",
+    "RubricJudge",
+    "create_case_builder_program",
+    "create_judge_program",
+    "create_solver_program",
     "load_state_json",
+    "program_hash",
     "program_state",
     "save_state_json",
 ]
-
-__version__ = "0.1.0"

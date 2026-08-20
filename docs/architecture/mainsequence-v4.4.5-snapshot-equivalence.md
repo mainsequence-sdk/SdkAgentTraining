@@ -10,25 +10,26 @@ Result: **byte-equivalent — 21/21 configured instruction files match**
 | Repository | `https://github.com/mainsequence-sdk/mainsequence-sdk.git` |
 | Requested ref | tag `v4.4.5` |
 | Resolved commit | `3b5a20a344cec0c960351dc3c601d32a66a8b46e` |
-| Target specification hash | `sha256:2dddf44737e99e85d82bdf1b379c7cdc7dcbca1189a545b8e61b98843fca0c38` |
-| Extraction configuration hash | `sha256:dbeab527cb383101a2ff6a666684a1e50fa9ad3943cd2f46ba55156f3eb4aff0` |
-| Inventory hash | `sha256:6a231942544ff41f8b3665578a40f064bd9c6266d1c52ef92a4b5e4ed4270432` |
-| Snapshot lock hash | `sha256:fbb65b6b3e6fa1526be6be491acddf8129ebc82b7024635fa6c13c9d2886b221` |
+| Target specification hash | `sha256:5b17c2d1956d5ad4cdc41f5b59a467ace6e35728f35657f7c78afa034bf9fbf3` |
+| Extraction configuration hash | `sha256:a5e9032f738b9f8ea61145cdac7d450ad7f5a1dc1e7d771ff30c864d8e805016` |
+| Inventory hash | `sha256:c1fb9df2c77737fcaddb216ae5ebba6af9b984d4c963679c41216e13c659d441` |
+| Snapshot lock hash | `sha256:4639106bfd6c81d07ba0c1262dd0ae9f203c9b27b7b2599349ae29b42879a962` |
 | Global context files | 1 |
 | Instruction units | 20 |
 
 The public tag was resolved by Git, including annotated-tag peeling behavior,
-then fetched by its exact commit. Extraction used only the target pack paths:
+then fetched by its exact commit. The snapshot retains the complete repository
+externally so the builder can ground cases in supporting code. The selected
+instruction subset is still locked explicitly as:
 
 ```text
 agent_scaffold/AGENTS.md
 agent_scaffold/skills/**/SKILL.md
 ```
 
-The fetched checkout and extracted content were stored under an external
-temporary data root and were not added to Git. The compact generated lock is
-committed in the experiment pack because it contains identity and hashes, not
-raw repository content or run results.
+The fetched checkout, full snapshot, and generated lock are stored under the
+external data root and are not added to Git. `workspace.yaml` is the only source
+configuration committed in the experiment workspace.
 
 ## Byte Comparison
 
@@ -73,6 +74,6 @@ No discrepancy exists to classify:
 
 Therefore the removed schema-v0 instruction snapshot was a byte-faithful
 namespace transformation of the configured public GitHub source at the locked
-commit. Current experiments resolve the upstream source into external
-content-addressed storage and commit only the compact lock under
-`experiments/mainsequence-sdk/snapshots/`.
+commit. Current experiments resolve the upstream source and generated lock into
+external content-addressed storage; neither repository copies nor snapshot
+locks are committed under `experiments/`.

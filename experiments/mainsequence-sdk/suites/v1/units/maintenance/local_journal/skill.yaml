@@ -1,6 +1,0 @@
-case_set_version: v1
-skill_path: maintenance/local_journal
-display_name: local-journal
-description: Use this skill to maintain the project-state files under `.agents/` in
-  a Main Sequence repository. This skill owns reconciliation of current state, stable
-  references, next actions, blockers, and historical notes after material work.

@@ -4,7 +4,6 @@ import json
 import os
 import shutil
 import tempfile
-from collections.abc import Iterable
 from pathlib import Path, PurePosixPath
 
 from .errors import ConfigurationError, IntegrityError, ResolutionError
@@ -17,6 +16,18 @@ from .models import (
     UnitSourceSpecification,
 )
 from .sources import ResolvedSource, SourceProvider
+
+
+SNAPSHOT_EXTRACTION_VERSION = "full-repository-v2"
+
+
+def extraction_configuration_hash(target: TargetSpecification) -> str:
+    return content_hash(
+        {
+            "version": SNAPSHOT_EXTRACTION_VERSION,
+            "instruction_bundles": target.instruction_bundles,
+        }
+    )
 
 
 def _is_within(path: Path, root: Path) -> bool:
@@ -38,65 +49,35 @@ def _safe_source_file(checkout: Path, relative: str) -> Path:
     return candidate
 
 
-def _matches(relative: PurePosixPath, patterns: Iterable[str]) -> bool:
-    return any(relative.match(pattern) for pattern in patterns)
-
-
-def _join_unit_id(prefix: str, value: str) -> str:
-    components = [item.strip("/") for item in (prefix, value) if item.strip("/")]
-    logical_id = "/".join(components)
-    if not logical_id:
-        raise ResolutionError("instruction locator produced an empty logical unit id")
-    return logical_id
-
-
-def _directory_units(
-    checkout: Path, source: UnitSourceSpecification
-) -> list[tuple[str, str]]:
+def _directory_units(checkout: Path, source: UnitSourceSpecification) -> list[tuple[str, str]]:
     assert source.root is not None
-    assert source.filename is not None
     root = checkout / source.root
     if root.is_symlink() or not root.is_dir():
         raise ResolutionError(f"configured instruction root is not a directory: {source.root}")
     if not _is_within(root.resolve(), checkout.resolve()):
         raise ResolutionError(f"configured instruction root escapes checkout: {source.root}")
-    candidates = root.rglob(source.filename) if source.recursive else root.glob(source.filename)
+    candidates = root.rglob("SKILL.md")
     selected: list[tuple[str, str]] = []
     for candidate in sorted(candidates):
         relative_to_root = PurePosixPath(candidate.relative_to(root).as_posix())
-        if not _matches(relative_to_root, source.include):
-            continue
-        if source.exclude and _matches(relative_to_root, source.exclude):
-            continue
         source_path = candidate.relative_to(checkout).as_posix()
         _safe_source_file(checkout, source_path)
         parent = relative_to_root.parent.as_posix()
-        derived = candidate.stem if parent == "." else parent
-        selected.append((_join_unit_id(source.id_prefix, derived), source_path))
+        derived = root.name if parent == "." else parent
+        selected.append((derived, source_path))
     return selected
 
 
-def _source_units(
-    checkout: Path, source: UnitSourceSpecification
-) -> list[tuple[str, str]]:
+def _source_units(checkout: Path, source: UnitSourceSpecification) -> list[tuple[str, str]]:
     if source.type == "directory":
         selected = _directory_units(checkout, source)
     else:
         selected = []
         for entry in source.entries:
             _safe_source_file(checkout, entry.source_path)
-            selected.append((_join_unit_id(source.id_prefix, entry.id), entry.source_path))
-    if not selected and not source.allow_empty:
+            selected.append((entry.id, entry.source_path))
+    if not selected:
         raise ResolutionError(f"instruction source {source.id!r} matched no files")
-    if source.exact_count is not None and len(selected) != source.exact_count:
-        raise ResolutionError(
-            f"instruction source {source.id!r} expected {source.exact_count} files, "
-            f"found {len(selected)}"
-        )
-    selected_ids = {unit_id for unit_id, _ in selected}
-    missing = sorted(set(source.required_ids) - selected_ids)
-    if missing:
-        raise ResolutionError(f"instruction source {source.id!r} misses required ids: {missing}")
     return selected
 
 
@@ -129,9 +110,7 @@ class ExternalSnapshotStore:
         if not lock_file.is_file() or lock_file.is_symlink():
             raise IntegrityError(f"snapshot lock is missing or unsafe: {lock_file}")
         try:
-            loaded = SnapshotLock.from_mapping(
-                json.loads(lock_file.read_text(encoding="utf-8"))
-            )
+            loaded = SnapshotLock.from_mapping(json.loads(lock_file.read_text(encoding="utf-8")))
         except (json.JSONDecodeError, ConfigurationError) as error:
             raise IntegrityError(f"snapshot lock cannot be verified: {error}") from error
         if loaded != lock:
@@ -159,6 +138,13 @@ class SnapshotBuilder:
 
     def create(self, target: TargetSpecification) -> SnapshotLock:
         resolved = self.provider.resolve(target.source)
+        return self.create_resolved(target, resolved)
+
+    def create_resolved(
+        self,
+        target: TargetSpecification,
+        resolved: ResolvedSource,
+    ) -> SnapshotLock:
         checkout_parent = Path(tempfile.mkdtemp(prefix="checkout-", dir=self.store.temporary_root))
         checkout = checkout_parent / "repository"
         try:
@@ -199,9 +185,7 @@ class SnapshotBuilder:
                             )
                         unit_keys.add(key)
                         source_file = _safe_source_file(checkout, source_path)
-                        locked_file = self._copy_locked(
-                            source_file, source_path, staging, files
-                        )
+                        locked_file = self._copy_locked(source_file, source_path, staging, files)
                         units.append(
                             LockedInstructionUnit(
                                 bundle_id=bundle.id,
@@ -212,7 +196,22 @@ class SnapshotBuilder:
                                 content_hash=locked_file.content_hash,
                             )
                         )
-            extraction_hash = content_hash(target.instruction_bundles)
+            # The entire pinned repository is retained externally so the case builder
+            # can ground drafts in supporting source files without adding another
+            # user-authored source registry. Instruction units remain an explicit,
+            # separately locked subset.
+            for source_file in sorted(checkout.rglob("*")):
+                relative = source_file.relative_to(checkout)
+                if ".git" in relative.parts or source_file.is_symlink():
+                    continue
+                if source_file.is_file():
+                    self._copy_locked(
+                        source_file,
+                        relative.as_posix(),
+                        staging,
+                        files,
+                    )
+            extraction_hash = extraction_configuration_hash(target)
             snapshot_id = (
                 f"{target.id}-{resolved.resolved_commit[:12]}-"
                 f"{extraction_hash.removeprefix('sha256:')[:12]}"

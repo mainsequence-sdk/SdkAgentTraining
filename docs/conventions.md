@@ -2,80 +2,93 @@
 
 ## Ownership
 
-- Core owns neutral schemas, locks, lifecycle, storage, execution, evaluation
-  contracts, and reporting.
-- Program modules own rendering/compilation behavior.
-- Provider modules own model transport and binding details.
-- Experiment workspaces own targets, sources, co-located suite/split data,
-  profiles, and target-specific trusted evaluators.
-- External storage owns all generated/runtime evidence.
+- `src/ms_agent_eval` owns generic DSPy programs, source locking, case
+  provenance, LLM judging, optimization governance, isolation, and reporting.
+- `workspace.yaml` owns a repository URL/ref, exact instruction selection,
+  three role models, case location, judge calibration, and experiments.
+- Promoted case packages and human-labelled calibration inputs are versioned.
+- External storage owns repository snapshots, builder drafts/calls, solver
+  calls, judge calls, compiled state, evaluations, and reports.
 
-An evaluated library must never appear in core dependencies or defaults.
+An evaluated repository must never become a core dependency or default path.
 
-## Reproducible source identity
+## Repository identity
 
-- Author a GitHub HTTPS URL plus tag or full commit.
-- Resolve tags to a full commit before execution.
-- Snapshot only exact configured paths.
-- Reject symlinks, traversal, ambiguous unit ids, fallback-root probing, and
+- Author an HTTPS GitHub URL plus a tag or full commit.
+- Resolve tags to a full 40-character commit before model execution.
+- Select global instruction files explicitly.
+- Select skills with exactly one of `directory` or `files`.
+- Reject links, traversal, duplicate ids, missing files, empty discovery, and
   source/snapshot hash mismatches.
-- Identify every case through `(suite, version, bundle, unit, case)` and every
-  run through locked target/snapshot/program/provider/runtime/evaluator
+- Counts and file hashes are generated lock evidence, not user assertions.
+
+## Three LLM roles
+
+- `case_builder`, `solver`, and `judge` must resolve to distinct provider/model
   identities.
+- The builder sees locked instructions, source context, the coverage request,
+  and summaries of existing cases. It never sees solver or judge evidence.
+- The solver sees global context, skill context, and task only.
+- The judge sees the rubric, expected response/artifacts, candidate response,
+  task, and skill context.
+- Every call records its role, rendered request, response, usage, latency,
+  provider/model, parameters, and artifact identities externally.
 
-## Cases and evaluators
+## Cases and semantic judging
 
-A case directory contains `case.yaml`, `prompt.md`, `expected/`, and
-`rubric.yaml`. Its evaluator block is mandatory:
+A promoted case contains:
 
-```yaml
-evaluator:
-  name: example.correctness-v1
-  method: rule-based-checklist
-  status: active
+```text
+case.yaml
+prompt.md
+expected/response.md
+expected/artifacts/       optional
+rubric.yaml
 ```
 
-Supported status/method pairs are:
+`case.yaml` declares schema version, id, title, skill, leakage group, local file
+references, immutable source paths, and builder provenance hashes. Direct edits
+that change package identity invalidate provenance.
 
-- `active` / `rule-based-checklist`;
-- `manual_review_required` / `human-review`;
-- `not_evaluable` / `none`.
+The configured DSPy judge LLM is the only semantic scorer. There are no Python
+evaluator plugins, rule/checklist methods, evaluator status modes, keyword
+judges, or manual-review scoring alternatives. Deterministic code may only:
 
-Registration uses the exact namespaced name. Every active evaluator must pass
-positive, negative, and adversarial calibration. Missing coverage is a preflight
-error, not a zero. Unscored generation has null score/pass fields.
+- validate exact criterion and hard-failure ids;
+- reject malformed scores outside `[0, 1]`;
+- compute weighted totals;
+- take the median criterion score across judge votes;
+- apply majority voting to declared hard failures.
 
-Evaluator profiles point to trusted Python modules inside their workspace. The
-generic wheel loads only the explicitly selected profile; target-specific code
-must never live under `src/ms_agent_eval/`.
+Judge calibration uses human-labelled strong, partial, incorrect,
+contradictory, and adversarial candidate responses. Failure blocks every solver
+call.
 
 ## Dataset governance
 
-- Split by leakage-resistant group, never individual paraphrase alone.
-- Optimization sees train and development only.
-- Publish a content-addressed JSON compiled artifact before opening held-out
-  test/challenge content.
-- Report development and held-out results separately.
-- Promote explicitly after held-out non-regression and anti-gaming checks.
-- Never use test feedback to select a candidate or edit its prompt.
+- Assign a leakage-resistant group, not each paraphrase, to a split.
+- The builder proposes a group but cannot choose its split.
+- Optimization can load train and development only.
+- Judge calibration for optimization may reference train/development cases,
+  never test/challenge cases.
+- Publish state-only DSPy JSON with pickle and unsafe LM state disabled.
+- Load untouched test data only after candidate publication.
+- Never use test results to revise cases, prompts, demonstrations, or optimizer
+  parameters.
 
 ## Runtime and secrets
 
-- Python 3.12 is the baseline.
-- Execute repository code only in a digest-pinned Docker runtime.
-- Default run network is `none`; build/network access must be separately scoped.
-- Pass secrets by reference at runtime, never through committed YAML, locks,
-  rendered-message evidence, or reports.
-- Use a non-root user, read-only root filesystem, dropped capabilities, resource
-  limits, bounded output, and automatic container removal.
+- CPython 3.12+ is the baseline.
+- `response_only` is valid when target code need not execute.
+- Target code executes only in a digest-pinned Docker image with network none,
+  a non-root user, read-only root filesystem, dropped capabilities, resource
+  limits, bounded output, and automatic cleanup.
+- Keep secrets in environment/provider facilities. Never commit them or include
+  plaintext in locks and reports.
 
 ## Results
 
-Do not commit clones, extracted snapshots, prompts sent to models, responses,
-logs, patches, evaluations, optimizer candidates, SQLite databases, or generated
-reports. Store them under the selected external root and reference them by
-content id.
-
-Reports must show suite/version, target/commit/snapshot, bundle/unit,
-program/engine/adapter/compiled artifact, split, provider/model/parameters, and
-evaluator/version. Missing legacy identity is labeled `unresolved`.
+Every comparison locks repository commit/snapshot, case bytes and split,
+builder identity, solver program/model, judge program/model, calibration corpus,
+runtime, and compiled artifact. Reports must not aggregate records across a
+changed correctness contract without labeling the difference.

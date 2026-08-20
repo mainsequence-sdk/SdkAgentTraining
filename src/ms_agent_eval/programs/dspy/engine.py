@@ -3,33 +3,106 @@ from __future__ import annotations
 import json
 import tempfile
 from collections.abc import Mapping
+from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
 
 import dspy
+
 from ms_agent_eval.core.errors import ConfigurationError, IntegrityError
-from ms_agent_eval.core.hashing import canonical_json_bytes
-from ms_agent_eval.core.models import ArtifactReference, ProgramResult, ProgramSpecification
-from ms_agent_eval.core.programs import ProgramInputs
+from ms_agent_eval.core.hashing import canonical_json_bytes, content_hash
+from ms_agent_eval.core.models import ArtifactReference, ProgramResult
 from ms_agent_eval.core.providers import ModelCallObserver
 from ms_agent_eval.core.storage import ArtifactStore
 
 
+class CaseBuilder(dspy.Signature):
+    """Author one grounded, self-contained evaluation case package."""
+
+    global_context: str = dspy.InputField()
+    skill_context: str = dspy.InputField()
+    source_context: str = dspy.InputField()
+    coverage_request: str = dspy.InputField()
+    existing_case_summaries: list[str] = dspy.InputField()
+    case_spec: dict[str, object] = dspy.OutputField()
+    prompt: str = dspy.OutputField()
+    expected_response: str = dspy.OutputField()
+    rubric: dict[str, object] = dspy.OutputField()
+    expected_artifacts: dict[str, str] = dspy.OutputField()
+    source_paths: list[str] = dspy.OutputField()
+    leakage_group: str = dspy.OutputField()
+
+
 class InstructionResponse(dspy.Signature):
-    """Answer the task using the supplied repository instruction context."""
+    """Answer a task using only the locked repository instruction context."""
 
-    global_context: str = dspy.InputField(
-        desc="Global instructions extracted from the locked target snapshot."
-    )
-    instruction_context: str = dspy.InputField(
-        desc="Selected instruction-unit content from the locked target snapshot."
-    )
-    task: str = dspy.InputField(desc="The evaluation case presented to the model.")
-    response: str = dspy.OutputField(desc="The final answer to evaluate.")
+    global_context: str = dspy.InputField()
+    skill_context: str = dspy.InputField()
+    task: str = dspy.InputField()
+    response: str = dspy.OutputField()
 
 
-def create_program() -> dspy.Predict:
+class RubricJudge(dspy.Signature):
+    """Judge a candidate against the locked rubric and expected result."""
+
+    task: str = dspy.InputField()
+    skill_context: str = dspy.InputField()
+    rubric: str = dspy.InputField()
+    expected_response: str = dspy.InputField()
+    expected_artifacts: str = dspy.InputField()
+    candidate_response: str = dspy.InputField()
+    criterion_scores: dict[str, float] = dspy.OutputField()
+    hard_failures: list[str] = dspy.OutputField()
+    feedback: str = dspy.OutputField()
+
+
+PROGRAM_SIGNATURES: Mapping[str, Mapping[str, tuple[str, ...]]] = {
+    "case_builder": {
+        "inputs": (
+            "global_context",
+            "skill_context",
+            "source_context",
+            "coverage_request",
+            "existing_case_summaries",
+        ),
+        "outputs": (
+            "case_spec",
+            "prompt",
+            "expected_response",
+            "rubric",
+            "expected_artifacts",
+            "source_paths",
+            "leakage_group",
+        ),
+    },
+    "solver": {
+        "inputs": ("global_context", "skill_context", "task"),
+        "outputs": ("response",),
+    },
+    "judge": {
+        "inputs": (
+            "task",
+            "skill_context",
+            "rubric",
+            "expected_response",
+            "expected_artifacts",
+            "candidate_response",
+        ),
+        "outputs": ("criterion_scores", "hard_failures", "feedback"),
+    },
+}
+
+
+def create_case_builder_program() -> dspy.Predict:
+    return dspy.Predict(CaseBuilder)
+
+
+def create_solver_program() -> dspy.Predict:
     return dspy.Predict(InstructionResponse)
+
+
+def create_judge_program() -> dspy.Predict:
+    return dspy.Predict(RubricJudge)
 
 
 def program_state(program: dspy.Module) -> dict[str, object]:
@@ -57,9 +130,13 @@ def program_state(program: dspy.Module) -> dict[str, object]:
     return {"predictors": predictors}
 
 
+def program_hash(program: dspy.Module) -> str:
+    return content_hash(program_state(program))
+
+
 def save_state_json(program: dspy.Module, path: Path) -> Mapping[str, object]:
     if path.suffix != ".json":
-        raise ConfigurationError("only DSPy state-only JSON artifacts are permitted")
+        raise ConfigurationError("only state-only DSPy JSON artifacts are permitted")
     path.parent.mkdir(parents=True, exist_ok=True)
     program.save(str(path), save_program=False)
     payload = json.loads(path.read_text(encoding="utf-8"))
@@ -85,8 +162,17 @@ def _failure_kind(error: Exception) -> str:
     return name
 
 
-class DspyProgramEngine:
-    id = "dspy"
+@dataclass(frozen=True)
+class DspyExecutionContract:
+    role: str
+    program_hash: str
+    inputs: Mapping[str, object]
+    required_outputs: tuple[str, ...]
+    primary_output: str | None
+
+
+class DspyExecutor:
+    """The single execution path for builder, solver, judge, and compiled solver."""
 
     def __init__(self, store: ArtifactStore) -> None:
         self.store = store
@@ -94,44 +180,51 @@ class DspyProgramEngine:
     def execute(
         self,
         *,
-        specification: ProgramSpecification,
-        inputs: ProgramInputs,
+        contract: DspyExecutionContract,
+        program: dspy.Module,
         lm: dspy.BaseLM,
         observer: ModelCallObserver,
-        program: dspy.Module | None = None,
         adapter: dspy.Adapter | None = None,
     ) -> ProgramResult:
-        if specification.engine != self.id:
-            raise ConfigurationError("DspyProgramEngine requires engine: dspy")
-        student = program or create_program()
+        if observer.role != contract.role:
+            raise IntegrityError("DSPy execution contract and observer roles differ")
+        if program_hash(program) != contract.program_hash:
+            raise IntegrityError("DSPy program state differs from its locked hash")
         selected_adapter = adapter or dspy.ChatAdapter(use_json_adapter_fallback=False)
         start = len(observer.records)
-        values = {
-            "global_context": inputs.global_context,
-            "instruction_context": inputs.instruction_context,
-            "task": inputs.task,
-        }
         try:
             with dspy.context(lm=lm, adapter=selected_adapter):
-                prediction = student(**values)
+                prediction = program(**dict(contract.inputs))
+            calls = tuple(observer.records[start:])
+            if not calls:
+                raise IntegrityError("DSPy execution produced no observed model call")
             outputs = dict(prediction.toDict())
-            response = outputs.get("response")
-            if not isinstance(response, str):
-                raise IntegrityError("DSPy response field was not a string")
+            missing = sorted(set(contract.required_outputs) - set(outputs))
+            if missing:
+                raise IntegrityError(f"DSPy output misses required fields: {missing}")
+            primary: str | None = None
+            if contract.primary_output is not None:
+                value = outputs.get(contract.primary_output)
+                if not isinstance(value, str):
+                    raise IntegrityError(
+                        f"DSPy primary output {contract.primary_output!r} must be a string"
+                    )
+                primary = value
             trace = self._trace(
                 {
-                    "engine": self.id,
-                    "engine_version": str(dspy.__version__),
-                    "program_hash": specification.content_hash,
-                    "program_state": program_state(student),
-                    "inputs": values,
+                    "role": contract.role,
+                    "runtime": "dspy",
+                    "runtime_version": str(dspy.__version__),
+                    "program_hash": contract.program_hash,
+                    "program_state": program_state(program),
+                    "inputs": contract.inputs,
                     "outputs": outputs,
                 }
             )
             return ProgramResult(
                 outputs=outputs,
-                primary_response=response,
-                calls=tuple(observer.records[start:]),
+                primary_response=primary,
+                calls=calls,
                 trace_artifact=trace,
                 status="completed",
                 error_kind=None,
@@ -140,11 +233,12 @@ class DspyProgramEngine:
             kind = _failure_kind(error)
             trace = self._trace(
                 {
-                    "engine": self.id,
-                    "engine_version": str(dspy.__version__),
-                    "program_hash": specification.content_hash,
-                    "program_state": program_state(student),
-                    "inputs": values,
+                    "role": contract.role,
+                    "runtime": "dspy",
+                    "runtime_version": str(dspy.__version__),
+                    "program_hash": contract.program_hash,
+                    "program_state": program_state(program),
+                    "inputs": contract.inputs,
                     "error_kind": kind,
                     "error": str(error),
                 }
@@ -166,6 +260,4 @@ class DspyProgramEngine:
                 return self.store.put_blob(content, "application/json")
 
     def _trace(self, value: object) -> ArtifactReference:
-        return self.store.put_blob(
-            BytesIO(canonical_json_bytes(value)), "application/json"
-        )
+        return self.store.put_blob(BytesIO(canonical_json_bytes(value)), "application/json")

@@ -1,8 +1,0 @@
-case_set_version: v1
-skill_path: command_center/app_components
-display_name: command-center-app-components
-description: Use this skill when the task is about AppComponent widgets in a Main
-  Sequence project. This skill owns AppComponent input contracts, custom forms, form
-  sections and field definitions, and the boundary between AppComponent input contracts
-  and widget-facing output contracts. It does not own workspace layout, generic FastAPI
-  design, or Streamlit dashboards.

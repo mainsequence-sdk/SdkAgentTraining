@@ -1,8 +1,0 @@
-skill_path: maintenance/bug_auditor
-case_set_version: v2
-target_sdk_version: 4.4.5
-source_sdk_skill: https://github.com/mainsequence-sdk/mainsequence-sdk/blob/3b5a20a344cec0c960351dc3c601d32a66a8b46e/agent_scaffold/skills/maintenance/bug_auditor/SKILL.md
-display_name: doc-bug-auditor
-description: Reviews a Main Sequence project for status, blockers, failures, and completion.
-migrated_from_case_set: v1
-migration_status: pending_revalidation

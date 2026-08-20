@@ -1,5 +1,0 @@
-case_set_version: v1
-skill_path: data_access/exploration
-display_name: mainsequence-data-exploration
-description: Use this skill when the task is to discover what `DataNode` or `SimpleTable`
-  data already exists on the Main Sequence platform before implementation starts.

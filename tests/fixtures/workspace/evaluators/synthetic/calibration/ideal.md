@@ -1,1 +1,0 @@
-Synthetic calibration fixture.

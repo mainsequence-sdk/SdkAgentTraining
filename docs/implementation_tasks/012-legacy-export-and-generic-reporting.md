@@ -1,6 +1,6 @@
 # 012 — Legacy Export and Generic Reporting
 
-Status: Implemented on 2026-08-19
+Status: Superseded by task 017; retained only as historical implementation evidence
 Priority: P1
 Depends on: tasks 005, 009–011
 

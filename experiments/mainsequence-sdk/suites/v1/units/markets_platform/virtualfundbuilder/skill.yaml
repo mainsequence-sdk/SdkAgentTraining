@@ -1,8 +1,0 @@
-case_set_version: v1
-skill_path: markets_platform/virtualfundbuilder
-display_name: mainsequence-virtualfundbuilder
-description: Use this skill when the task is about portfolio construction with Virtual
-  Fund Builder in a Main Sequence project. This skill owns VFB pipeline design, portfolio
-  configuration, signal and rebalance roles, price-path expectations, forward-fill
-  semantics, and portfolio data contracts. It does not own asset registration, generic
-  DataNode producer design, or pricing-runtime internals.

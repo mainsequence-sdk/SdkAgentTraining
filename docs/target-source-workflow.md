@@ -1,36 +1,50 @@
 # Target Source and Snapshot Workflow
 
-Targets are acquired from a configured GitHub HTTPS repository and a tag or full
-commit. Installed Python distributions are not the source of truth.
+The target is configured directly in `workspace.yaml`:
 
-For each target:
-
-1. declare the repository URL, ref, exact global-context files, and exact unit
-   roots or explicit entries;
-2. resolve a tag to one 40-character commit;
-3. safely acquire only that revision with no submodules/LFS unless explicitly
-   enabled;
-4. reject links, traversal, collisions, missing required files, and count/id
-   assertion failures;
-5. publish the extracted snapshot outside Git by content hash;
-6. generate a compact lock containing upstream source path, normalized snapshot
-   path, size, and hash for every file/unit;
-7. verify the external snapshot from the lock without network access.
-
-Example:
-
-```bash
-ms-agent-eval target resolve TARGET_ID --workspace path/to/workspace.yaml
-ms-agent-eval target snapshot TARGET_ID \
-  --workspace path/to/workspace.yaml \
-  --data-root "$MS_AGENT_EVAL_DATA_ROOT"
+```yaml
+evaluation:
+  repository:
+    url: https://github.com/example/project
+    ref: v1.2.3
+  instructions:
+    global:
+      - AGENTS.md
+    skills:
+      directory: .agents/skills
 ```
 
-Hidden skill roots such as `.agents/skills` work only when written in the target
-configuration. The resolver never guesses them. Multiple roots require stable
-logical prefixes and reject duplicate unit ids.
+An exact file list is the only alternative:
 
-The Main Sequence v4.4.5 workspace records GitHub tag `v4.4.5`, resolved commit
-`3b5a20a344cec0c960351dc3c601d32a66a8b46e`, global context
-`agent_scaffold/AGENTS.md`, and unit root `agent_scaffold/skills`. That is one
-target configuration, not a framework convention.
+```yaml
+skills:
+  files:
+    - .agents/skills/one/SKILL.md
+    - .agents/skills/two/SKILL.md
+```
+
+`validate`, `inspect`, `cases build`, and `run` automatically:
+
+1. resolve an authored tag to one full commit;
+2. materialize only that revision without submodules or Git LFS;
+3. read every configured global file;
+4. recursively discover `SKILL.md` under the configured directory, or use the
+   exact file list, and catalog those instructions separately;
+5. reject links, traversal, missing files, empty discovery, and duplicate skill
+   ids;
+6. publish the immutable repository bytes under the external data root so the
+   case builder can ground source paths without another source registry;
+7. generate a lock with requested ref, resolved commit, repository path,
+   normalized snapshot path, size, and content hash for every file;
+8. reuse and verify the snapshot without network on later runs.
+
+There is no target registry, snapshot registry, compatibility map, authored
+count assertion, locator filename, or fallback path probing. A hidden directory
+such as `.agents/skills` works only when the manifest explicitly selects it.
+
+The default external location is `~/ms_agent_eval/<workspace-id>/snapshots`.
+Set `workspace.data_root` to another path outside the Git workspace when needed.
+
+The MainSequence example selects GitHub tag `v4.4.5`, global instruction
+`agent_scaffold/AGENTS.md`, and the complete `agent_scaffold/skills` directory.
+Those are MainSequence workspace choices, not library defaults.

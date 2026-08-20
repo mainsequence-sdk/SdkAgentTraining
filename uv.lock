@@ -847,35 +847,24 @@ name = "ms-agent-eval"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "dspy" },
     { name = "pyyaml" },
-]
-
-[package.optional-dependencies]
-all = [
-    { name = "dspy" },
-]
-dspy = [
-    { name = "dspy" },
 ]
 
 [package.dev-dependencies]
 dev = [
-    { name = "dspy" },
     { name = "pytest" },
     { name = "ruff" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "dspy", marker = "extra == 'all'", specifier = "==3.2.1" },
-    { name = "dspy", marker = "extra == 'dspy'", specifier = "==3.2.1" },
+    { name = "dspy", specifier = "==3.2.1" },
     { name = "pyyaml", specifier = ">=6.0.2" },
 ]
-provides-extras = ["dspy", "all"]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "dspy", specifier = "==3.2.1" },
     { name = "pytest", specifier = ">=8.3" },
     { name = "ruff", specifier = ">=0.6" },
 ]

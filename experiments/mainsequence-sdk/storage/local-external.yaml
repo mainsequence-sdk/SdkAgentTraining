@@ -1,4 +1,0 @@
-schema_version: 1
-id: local-external
-artifact_uri: file://${MS_AGENT_EVAL_DATA_ROOT}/artifacts
-metadata_uri: sqlite:///${MS_AGENT_EVAL_DATA_ROOT}/metadata/ms-agent-eval.sqlite

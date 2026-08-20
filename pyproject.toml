@@ -9,15 +9,8 @@ description = "Library-agnostic repository-agent evaluation and prompt optimizat
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+  "dspy==3.2.1",
   "pyyaml>=6.0.2",
-]
-
-[project.optional-dependencies]
-dspy = [
-  "dspy==3.2.1",
-]
-all = [
-  "dspy==3.2.1",
 ]
 
 [project.scripts]
@@ -25,7 +18,6 @@ ms-agent-eval = "ms_agent_eval.core.cli:main"
 
 [dependency-groups]
 dev = [
-  "dspy==3.2.1",
   "pytest>=8.3",
   "ruff>=0.6",
 ]

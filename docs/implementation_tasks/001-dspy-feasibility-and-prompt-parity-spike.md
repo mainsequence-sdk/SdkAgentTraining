@@ -1,6 +1,6 @@
 # 001 — DSPy Feasibility, Prompt-Parity, Safe-State, and Isolation Spike
 
-Status: Implemented on 2026-08-19 — decision `adopt-with-constraints`; constraints incorporated into task 000
+Status: Superseded by task 017; retained only as historical implementation evidence
 Priority: P0 / pre-refactor decision gate
 Estimated effort: 3–5 engineering days
 Primary area: model-program abstraction and optimization feasibility

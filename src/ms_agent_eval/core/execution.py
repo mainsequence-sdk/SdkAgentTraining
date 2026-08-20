@@ -13,17 +13,13 @@ from typing import Protocol
 from uuid import uuid4
 
 from .errors import ConfigurationError, PreflightError
-from .models import ArtifactReference, RuntimeProfile
+from .models import ArtifactReference
 from .storage import FilesystemArtifactStore
+from .workspace import RuntimeConfiguration
 
 
-_IMAGE_PATTERN = re.compile(r"^[^\s]+@sha256:[0-9a-f]{64}$")
-_ENVIRONMENT_PATTERN = re.compile(r"^[A-Z_][A-Z0-9_]*$")
-
-
-class ExecutionRole(str, Enum):
-    TARGET = "target"
-    TRUSTED_EVALUATOR = "trusted_evaluator"
+_IMAGE = re.compile(r"^[^\s]+@sha256:[0-9a-f]{64}$")
+_ENVIRONMENT = re.compile(r"^[A-Z_][A-Z0-9_]*$")
 
 
 class ExecutionStatus(str, Enum):
@@ -42,6 +38,8 @@ class ProcessOutcome:
 
 
 class ContainerRunner(Protocol):
+    def preflight(self) -> None: ...
+
     def run(
         self,
         arguments: Sequence[str],
@@ -50,8 +48,6 @@ class ContainerRunner(Protocol):
         container_name: str,
         maximum_capture_bytes: int,
     ) -> ProcessOutcome: ...
-
-    def preflight(self) -> None: ...
 
 
 class SubprocessDockerRunner:
@@ -75,56 +71,46 @@ class SubprocessDockerRunner:
         container_name: str,
         maximum_capture_bytes: int,
     ) -> ProcessOutcome:
-        stdout_file = tempfile.TemporaryFile()
-        stderr_file = tempfile.TemporaryFile()
         try:
-            process = subprocess.Popen(
+            completed = subprocess.run(
                 list(arguments),
-                stdout=stdout_file,
-                stderr=stderr_file,
+                capture_output=True,
+                timeout=timeout_seconds,
+                check=False,
             )
-            timed_out = False
-            try:
-                exit_code = process.wait(timeout=timeout_seconds)
-            except subprocess.TimeoutExpired:
-                timed_out = True
-                exit_code = None
-                subprocess.run(
-                    ["docker", "rm", "--force", container_name],
-                    check=False,
-                    capture_output=True,
-                    timeout=30,
-                )
-                process.kill()
-                process.wait(timeout=30)
-            stdout_file.seek(0)
-            stderr_file.seek(0)
-            stdout = stdout_file.read(maximum_capture_bytes + 1)
-            stderr = stderr_file.read(maximum_capture_bytes + 1)
-            truncated = (
-                len(stdout) > maximum_capture_bytes or len(stderr) > maximum_capture_bytes
-            )
+            stdout = completed.stdout
+            stderr = completed.stderr
+            truncated = max(len(stdout), len(stderr)) > maximum_capture_bytes
             return ProcessOutcome(
-                exit_code,
+                completed.returncode,
                 stdout[:maximum_capture_bytes],
                 stderr[:maximum_capture_bytes],
-                timed_out,
+                False,
                 truncated,
+            )
+        except subprocess.TimeoutExpired as error:
+            subprocess.run(
+                ["docker", "rm", "--force", container_name],
+                check=False,
+                capture_output=True,
+                timeout=30,
+            )
+            return ProcessOutcome(
+                None,
+                (error.stdout or b"")[:maximum_capture_bytes],
+                (error.stderr or b"")[:maximum_capture_bytes],
+                True,
             )
         except OSError as error:
             raise PreflightError("Docker executable could not be started") from error
-        finally:
-            stdout_file.close()
-            stderr_file.close()
 
 
 @dataclass(frozen=True)
 class ExecutionRequest:
     id: str
-    role: ExecutionRole
     repository_directory: Path
     command: tuple[str, ...]
-    runtime: RuntimeProfile
+    runtime: RuntimeConfiguration
     environment: Mapping[str, str]
 
 
@@ -139,11 +125,12 @@ class ExecutionResult:
     evidence_artifact: ArtifactReference
 
 
-class ExecutionBackend(Protocol):
-    def execute(self, request: ExecutionRequest) -> ExecutionResult: ...
-
-
 class DockerExecutor:
+    """Run target-repository commands in an isolated, digest-pinned container."""
+
+    timeout_seconds = 300
+    maximum_output_bytes = 10 * 1024 * 1024
+
     def __init__(
         self,
         artifact_store: FilesystemArtifactStore,
@@ -152,30 +139,30 @@ class DockerExecutor:
         self.artifact_store = artifact_store
         self.runner = runner or SubprocessDockerRunner()
 
-    def preflight(self, runtime: RuntimeProfile) -> None:
-        if runtime.backend != "docker" or not runtime.image:
-            raise PreflightError("Docker executor requires a Docker runtime profile")
-        if not _IMAGE_PATTERN.fullmatch(runtime.image):
-            raise PreflightError("Docker image is not pinned by digest")
+    def preflight(self, runtime: RuntimeConfiguration) -> None:
+        if runtime.type != "docker" or not runtime.image:
+            raise PreflightError("Docker execution requires runtime.type=docker")
+        if _IMAGE.fullmatch(runtime.image) is None:
+            raise PreflightError("Docker image must be pinned by sha256 digest")
         if runtime.network != "none":
-            raise PreflightError("the initial isolated executor supports only network: none")
+            raise PreflightError("isolated target execution currently requires network: none")
         self.runner.preflight()
 
     def execute(self, request: ExecutionRequest) -> ExecutionResult:
         self.preflight(request.runtime)
-        if not request.command or any("\x00" in argument for argument in request.command):
-            raise ConfigurationError("container command must be a non-empty NUL-free argv")
-        invalid_environment = sorted(
-            name for name in request.environment if not _ENVIRONMENT_PATTERN.fullmatch(name)
+        if not request.command or any("\x00" in item for item in request.command):
+            raise ConfigurationError("container command must be non-empty NUL-free argv")
+        invalid = sorted(
+            name for name in request.environment if _ENVIRONMENT.fullmatch(name) is None
         )
-        if invalid_environment:
-            raise ConfigurationError(
-                f"invalid container environment variable names: {invalid_environment}"
-            )
-        if any("\n" in value or "\r" in value or "\x00" in value for value in request.environment.values()):
-            raise ConfigurationError("container environment values must be single-line and NUL-free")
-        self._validate_input_tree(request.repository_directory)
-
+        if invalid:
+            raise ConfigurationError(f"invalid container environment names: {invalid}")
+        if any(
+            any(character in value for character in ("\n", "\r", "\x00"))
+            for value in request.environment.values()
+        ):
+            raise ConfigurationError("container environment values must be single-line")
+        self._validate_tree(request.repository_directory)
         staging = Path(
             tempfile.mkdtemp(prefix="execution-", dir=self.artifact_store.temporary_root)
         )
@@ -185,7 +172,7 @@ class DockerExecutor:
             output = staging / "output"
             shutil.copytree(request.repository_directory, target, symlinks=False)
             output.mkdir()
-            self._make_container_writable(target)
+            self._make_writable(target)
             output.chmod(0o777)
             environment_file = staging / "container.env"
             environment_file.write_text(
@@ -193,56 +180,47 @@ class DockerExecutor:
                 encoding="utf-8",
             )
             environment_file.chmod(0o600)
-            arguments = self._docker_arguments(
-                request, name=name, target=target, output=output, environment_file=environment_file
-            )
             outcome = self.runner.run(
-                arguments,
-                timeout_seconds=request.runtime.timeout_seconds,
+                self._arguments(request, name, target, output, environment_file),
+                timeout_seconds=self.timeout_seconds,
                 container_name=name,
-                maximum_capture_bytes=request.runtime.maximum_output_bytes,
+                maximum_capture_bytes=self.maximum_output_bytes,
             )
             stdout = self.artifact_store.put_blob(
-                _bytes_reader(outcome.stdout), "text/plain; charset=utf-8"
+                _reader(outcome.stdout), "text/plain; charset=utf-8"
             )
             stderr = self.artifact_store.put_blob(
-                _bytes_reader(outcome.stderr), "text/plain; charset=utf-8"
+                _reader(outcome.stderr), "text/plain; charset=utf-8"
             )
             output_size = self._tree_size(output)
-            output_artifact = None
-            error_kind = None
             if outcome.timed_out:
-                status = ExecutionStatus.TIMED_OUT
-                error_kind = "execution_timeout"
-            elif outcome.output_truncated or output_size > request.runtime.maximum_output_bytes:
-                status = ExecutionStatus.FAILED
-                error_kind = "output_limit_exceeded"
+                status, error_kind = ExecutionStatus.TIMED_OUT, "execution_timeout"
+            elif outcome.output_truncated or output_size > self.maximum_output_bytes:
+                status, error_kind = ExecutionStatus.FAILED, "output_limit_exceeded"
             elif outcome.exit_code == 0:
-                status = ExecutionStatus.COMPLETED
+                status, error_kind = ExecutionStatus.COMPLETED, None
             else:
-                status = ExecutionStatus.FAILED
-                error_kind = "nonzero_exit"
-            if output_size <= request.runtime.maximum_output_bytes:
-                output_artifact = self._archive_output(output, staging)
+                status, error_kind = ExecutionStatus.FAILED, "nonzero_exit"
+            output_artifact = (
+                self._archive(output, staging) if output_size <= self.maximum_output_bytes else None
+            )
             evidence = self.artifact_store.put_manifest(
                 f"executions/{request.id}/{uuid4().hex}",
                 {
-                    "schema_version": 1,
+                    "schema_version": 2,
                     "request_id": request.id,
-                    "role": request.role,
                     "image": request.runtime.image,
                     "command": request.command,
-                    "network": request.runtime.network,
+                    "network": "none",
                     "root_filesystem_read_only": True,
                     "capabilities_dropped": ["ALL"],
                     "no_new_privileges": True,
-                    "user": request.runtime.user,
                     "resources": {
-                        "cpus": request.runtime.cpus,
-                        "memory_mb": request.runtime.memory_mb,
-                        "pids": request.runtime.pids,
-                        "timeout_seconds": request.runtime.timeout_seconds,
-                        "maximum_output_bytes": request.runtime.maximum_output_bytes,
+                        "cpus": 2,
+                        "memory_mb": 2048,
+                        "pids": 256,
+                        "timeout_seconds": self.timeout_seconds,
+                        "maximum_output_bytes": self.maximum_output_bytes,
                     },
                     "environment_names": sorted(request.environment),
                     "status": status,
@@ -266,18 +244,13 @@ class DockerExecutor:
             shutil.rmtree(staging, ignore_errors=True)
 
     @staticmethod
-    def _docker_arguments(
+    def _arguments(
         request: ExecutionRequest,
-        *,
         name: str,
         target: Path,
         output: Path,
         environment_file: Path,
     ) -> list[str]:
-        runtime = request.runtime
-        target_mount = f"type=bind,src={target},dst=/workspace/target"
-        if request.role is ExecutionRole.TRUSTED_EVALUATOR:
-            target_mount += ",readonly"
         return [
             "docker",
             "run",
@@ -287,42 +260,42 @@ class DockerExecutor:
             "--network",
             "none",
             "--cpus",
-            str(runtime.cpus),
+            "2",
             "--memory",
-            f"{runtime.memory_mb}m",
+            "2048m",
             "--pids-limit",
-            str(runtime.pids),
+            "256",
             "--read-only",
             "--cap-drop",
             "ALL",
             "--security-opt",
             "no-new-privileges:true",
             "--user",
-            runtime.user,
+            "65534:65534",
             "--env-file",
             str(environment_file),
             "--mount",
-            target_mount,
+            f"type=bind,src={target},dst=/workspace/target",
             "--mount",
             f"type=bind,src={output},dst=/workspace/output",
             "--tmpfs",
             "/tmp:rw,noexec,nosuid,nodev,size=64m",
             "--workdir",
             "/workspace/target",
-            runtime.image or "",
+            request.runtime.image or "",
             *request.command,
         ]
 
     @staticmethod
-    def _validate_input_tree(root: Path) -> None:
+    def _validate_tree(root: Path) -> None:
         if root.is_symlink() or not root.is_dir():
-            raise ConfigurationError("execution repository input must be a real directory")
+            raise ConfigurationError("execution input must be a real directory")
         for path in root.rglob("*"):
             if path.is_symlink():
                 raise ConfigurationError(f"execution input contains a symlink: {path}")
 
     @staticmethod
-    def _make_container_writable(root: Path) -> None:
+    def _make_writable(root: Path) -> None:
         root.chmod(0o777)
         for path in root.rglob("*"):
             path.chmod(0o777 if path.is_dir() else 0o666)
@@ -337,7 +310,7 @@ class DockerExecutor:
                 size += path.stat().st_size
         return size
 
-    def _archive_output(self, output: Path, staging: Path) -> ArtifactReference:
+    def _archive(self, output: Path, staging: Path) -> ArtifactReference:
         archive = staging / "output.tar"
         with tarfile.open(archive, "w") as handle:
             for path in sorted(output.rglob("*")):
@@ -346,7 +319,7 @@ class DockerExecutor:
             return self.artifact_store.put_blob(content, "application/x-tar")
 
 
-def _bytes_reader(value: bytes):  # type: ignore[no-untyped-def]
+def _reader(value: bytes):  # type: ignore[no-untyped-def]
     from io import BytesIO
 
     return BytesIO(value)

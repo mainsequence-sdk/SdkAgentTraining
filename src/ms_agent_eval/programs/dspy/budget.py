@@ -5,8 +5,6 @@ import time
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 
-from ms_agent_eval.core.models import OptimizerProfile
-
 
 @dataclass(frozen=True)
 class BudgetLimits:
@@ -15,16 +13,6 @@ class BudgetLimits:
     tokens: int
     wall_seconds: float
     concurrency: int
-
-    @classmethod
-    def from_profile(cls, profile: OptimizerProfile) -> BudgetLimits:
-        return cls(
-            model_calls=int(profile.budgets["model_calls"]),
-            configured_cost=float(profile.budgets["configured_cost"]),
-            tokens=int(profile.budgets["tokens"]),
-            wall_seconds=float(profile.budgets["wall_seconds"]),
-            concurrency=int(profile.budgets["concurrency"]),
-        )
 
 
 @dataclass(frozen=True)
@@ -38,7 +26,7 @@ class BudgetSnapshot:
 
 class BudgetExceeded(RuntimeError):
     def __init__(self, reason: str, snapshot: BudgetSnapshot) -> None:
-        super().__init__(f"optimizer budget exceeded: {reason}")
+        super().__init__(f"LLM role budget exceeded: {reason}")
         self.reason = reason
         self.snapshot = snapshot
 

@@ -1,8 +1,0 @@
-case_set_version: v1
-skill_path: dashboards/streamlit
-display_name: mainsequence-dashboards-streamlit
-description: Use this skill when the task is about building a Streamlit dashboard
-  in a Main Sequence project. This skill owns dashboard folder structure, page bootstrapping,
-  use of the tested Main Sequence Streamlit helpers, sidebar and session patterns,
-  and dashboard-specific validation rules. It does not own FastAPI APIs, Command Center
-  workspace documents, or release orchestration semantics.

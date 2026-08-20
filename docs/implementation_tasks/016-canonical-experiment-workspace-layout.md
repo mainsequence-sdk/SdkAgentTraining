@@ -1,6 +1,6 @@
 # 016 — Canonical Experiment Workspace Layout
 
-Status: Implemented on 2026-08-19
+Status: Superseded by task 017
 Priority: P0 / ownership and repository-layout correction
 
 ## Outcome
@@ -35,10 +35,10 @@ experiments/<workspace>/
 ```
 
 Generated snapshots, runs, model calls, evaluations, compiled programs,
-databases, and reports remain outside Git under the workspace's explicitly
-configured data-root environment variable. The CLI resolves it from an explicit
-argument, the process environment, or the ignored `.env` beside
-`workspace.yaml`; `.env.example` documents the required local configuration.
+databases, and reports remain outside Git. The CLI resolves the data root from
+an explicit argument, the process environment, or the ignored `.env` beside
+`workspace.yaml`, then falls back to `~/ms_agent_eval/<workspace-id>`.
+`.env.example` documents an optional local override.
 
 ## Library boundary
 

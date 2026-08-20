@@ -1,119 +1,136 @@
 # Getting Started
 
-This guide runs a complete evaluation locally: it loads an experiment
-workspace, validates its authored suite and trusted evaluator, reads a saved LLM
-response, applies the case rubric, and emits a structured score. It requires no
-network, Docker daemon, model server, or MainSequence installation.
+This is the shortest complete workflow: select a repository and its skills,
+build cases with one LLM, solve them with a second LLM, and score them with a
+third LLM.
 
-## 1. Install the project
-
-From the repository root:
+## 1. Install Python 3.12+
 
 ```bash
 uv sync --python 3.12
 ```
 
-Confirm the workspace is internally consistent:
+DSPy is installed with the base library; no extra is needed.
+
+## 2. Create one workspace manifest
 
 ```bash
-uv run ms-agent-eval config validate \
-  --workspace experiments/mainsequence-sdk/workspace.yaml
+mkdir my-evaluation
+cd my-evaluation
+
+uv run --project /path/to/ms-agent-eval ms-agent-eval init \
+  --id example-evaluation \
+  --repo https://github.com/example/project \
+  --ref v1.2.3 \
+  --global-instructions AGENTS.md \
+  --skills-directory .agents/skills \
+  --cases cases
 ```
 
-This loads both suite versions, every indexed case, their grouped splits,
-compatibility mappings, programs, runtimes, storage, plans, and evaluator
-profiles.
+Use repeated `--skill-file path/to/SKILL.md` arguments instead of
+`--skills-directory` for an exact list. The two forms are mutually exclusive.
 
-## 2. Validate the evaluator
+`init` creates `workspace.yaml`, an empty case directory, a grouped split file,
+a judge-calibration manifest, and `.env.example`. It does not clone the target
+into the workspace.
+
+## 3. Configure three distinct models
 
 ```bash
-uv run ms-agent-eval evaluator validate mainsequence-rules-v1 \
-  --suite mainsequence-agent-skills-v2 \
-  --workspace experiments/mainsequence-sdk/workspace.yaml
+cp .env.example .env
 ```
 
-The command calibrates the trusted evaluator against its positive, negative,
-and adversarial fixtures, then confirms that every active case resolves to an
-exact registered evaluator name and method.
-
-## 3. Score an LLM response
-
-Use the included ideal response for a deterministic first run:
-
-```bash
-uv run ms-agent-eval evaluator score mainsequence-rules-v1 \
-  --suite mainsequence-agent-skills-v2 \
-  --case or-001-recurring-artifact-job \
-  --response experiments/mainsequence-sdk/evaluators/mainsequence/calibration/ideal.md \
-  --workspace experiments/mainsequence-sdk/workspace.yaml
-```
-
-The result includes:
-
-```json
-{
-  "case_id": "or-001-recurring-artifact-job",
-  "passed": true,
-  "score": 1.0,
-  "status": "evaluated"
-}
-```
-
-To evaluate a real model response, save its text outside the Git repository and
-replace the `--response` path. The authored prompt is at:
-
-```text
-experiments/mainsequence-sdk/suites/v2/units/platform_operations/
-  orchestration_and_releases/cases/or-001-recurring-artifact-job/prompt.md
-```
-
-## 4. Configure external experiment storage
-
-Snapshotting targets and creating experiment runs require a machine-local data
-root outside this repository:
-
-```bash
-cp experiments/mainsequence-sdk/.env.example \
-  experiments/mainsequence-sdk/.env
-```
-
-Edit `.env` and set an absolute external path:
+Set real, different model names:
 
 ```dotenv
-MS_AGENT_EVAL_DATA_ROOT=/absolute/path/outside/this/repository/mainsequence-sdk
+OLLAMA_BASE_URL=http://localhost:11434
+MS_AGENT_EVAL_CASE_BUILDER_MODEL=builder-model
+MS_AGENT_EVAL_SOLVER_MODEL=solver-model
+MS_AGENT_EVAL_JUDGE_MODEL=judge-model
 ```
 
-Resolution order is:
+The endpoint may be shared, but the resolved model identity for each role must
+differ. `.env` is local and ignored. If `workspace.data_root` is absent, all
+generated data goes to `~/ms_agent_eval/example-evaluation`.
 
-1. `--data-root` on the command line;
-2. the process environment;
-3. `.env` beside `workspace.yaml`.
+## 4. Build and promote cases
 
-The real `.env` is ignored. Only `.env.example` is committed.
-
-## 5. Plan the DSPy optimization experiment
-
-Planning is deterministic and makes no model request:
+The first validation of a new workspace exits successfully after validating the
+manifest and immutable source, and reports `status: incomplete` plus exact
+readiness blockers. It does not create an experiment lock or make a model call.
+Build external drafts:
 
 ```bash
-uv run ms-agent-eval experiment plan mainsequence-v2-few-shot-readiness \
-  --workspace experiments/mainsequence-sdk/workspace.yaml
+uv run --project /path/to/ms-agent-eval ms-agent-eval cases build \
+  --workspace workspace.yaml \
+  --coverage "Create grounded cases covering every discovered skill"
 ```
 
-The lock identifies the target commit, source snapshot, suite and case bytes,
-protected split, program, provider, runtime, evaluator implementation and
-calibration bytes, optimizer, and storage profile.
+This resolves the repository tag to a commit, creates/reuses an immutable
+external snapshot, invokes the configured DSPy case builder once per selected
+skill, validates its output, and stores call evidence plus drafts externally.
+It does not modify `cases/`.
 
-The current MainSequence optimization plan intentionally fails evaluator
-preflight before any model call because most train/development cases do not yet
-have calibrated automatic evaluators. This prevents a misleading optimized
-score. The offline scoring workflow above is fully operational for the active
-calibrated case.
+Inspect and promote accepted drafts:
 
-## Next steps
+```bash
+uv run --project /path/to/ms-agent-eval ms-agent-eval cases inspect-drafts \
+  --workspace workspace.yaml
 
-- Use [Target source workflow](target-source-workflow.md) to resolve and snapshot
-  another GitHub repository.
-- Use [Ollama workflow](ollama-workflow.md) to configure local model calls.
-- Read [Repository structure](structure.md) before creating another experiment
-  workspace.
+uv run --project /path/to/ms-agent-eval ms-agent-eval cases promote \
+  --workspace workspace.yaml \
+  --draft DRAFT_ID
+```
+
+Promotion writes the case package and assigns its leakage group to exactly one
+split. The package records builder model/program, snapshot, request, and content
+hashes; a direct edit invalidates provenance.
+
+## 5. Add human-labelled judge calibration
+
+`judge-calibration/manifest.yaml` must contain candidate responses labelled at
+least `strong`, `partial`, `incorrect`, `contradictory`, and `adversarial`.
+Every fixture references a promoted case and declares its human-accepted score
+range. The LLM judge must pass this corpus before any solver request is made.
+
+```yaml
+schema_version: 2
+fixtures:
+  - id: strong-example
+    case: case-id
+    candidate: strong.md
+    label: strong
+    score_range: [0.9, 1.0]
+```
+
+## 6. Validate and inspect
+
+```bash
+uv run --project /path/to/ms-agent-eval ms-agent-eval validate \
+  --workspace workspace.yaml
+
+uv run --project /path/to/ms-agent-eval ms-agent-eval inspect \
+  --workspace workspace.yaml
+```
+
+`inspect` shows the resolved commit, snapshot hash, selected instruction files,
+discovered skill ids, case/split coverage, all three DSPy program and model
+identities, calibration identity, runtime, projected calls, and immutable
+experiment lock hashes before a scored run.
+
+## 7. Evaluate, then optimize separately
+
+```bash
+uv run --project /path/to/ms-agent-eval ms-agent-eval run baseline \
+  --workspace workspace.yaml
+
+uv run --project /path/to/ms-agent-eval ms-agent-eval run optimize-few-shot \
+  --workspace workspace.yaml
+```
+
+The baseline solves and judges promoted cases. Optimization sees only train and
+development cases, compiles state-only DSPy JSON, publishes that artifact, and
+only then loads the untouched test split for final evaluation. Solver and judge
+usage are budgeted and reported separately.
+
+All run output paths printed by the commands are under the external data root.

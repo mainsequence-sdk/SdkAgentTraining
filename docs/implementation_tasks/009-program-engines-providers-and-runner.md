@@ -1,6 +1,6 @@
 # 009 — Raw/DSPy Engines, Provider Bindings, Evidence, and Runner
 
-Status: Implemented on 2026-08-19; live Ollama provider acceptance awaits a configured service
+Status: Superseded by task 017; retained only as historical implementation evidence
 Priority: P0 / model execution
 Depends on: tasks 002–008
 Unblocks: task 010; Ollama-backed production runs remain gated

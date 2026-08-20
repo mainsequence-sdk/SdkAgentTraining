@@ -69,14 +69,14 @@ class GitHubSourceProvider:
     def resolve(self, source: GitSource) -> ResolvedSource:
         canonical = self.canonical_url(source.repository_url)
         if source.submodules or source.git_lfs:
-            raise ResolutionError("submodules and Git LFS are disabled by the initial safe provider")
+            raise ResolutionError(
+                "submodules and Git LFS are disabled by the initial safe provider"
+            )
         if source.ref.type is SourceRefKind.COMMIT:
             commit = source.ref.value
         else:
             ref = f"refs/tags/{source.ref.value}"
-            output = self._runner(
-                ["ls-remote", "--tags", canonical, ref, f"{ref}^{{}}"], None
-            )
+            output = self._runner(["ls-remote", "--tags", canonical, ref, f"{ref}^{{}}"], None)
             matches: dict[str, str] = {}
             for line in output.splitlines():
                 fields = line.split("\t", maxsplit=1)

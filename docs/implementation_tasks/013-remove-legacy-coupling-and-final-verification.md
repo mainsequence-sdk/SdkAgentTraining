@@ -1,6 +1,6 @@
 # 013 — Remove Legacy Coupling and Complete the Refactor
 
-Status: Implemented on 2026-08-19
+Status: Superseded by task 017; retained only as historical implementation evidence
 Priority: P0
 Depends on: tasks 002–012
 

@@ -1,0 +1,382 @@
+from __future__ import annotations
+
+import time
+from collections.abc import Mapping, Sequence
+from pathlib import Path
+
+import dspy
+import yaml
+from litellm import ModelResponse
+
+from ms_agent_eval.core.evaluation import CaseDefinition
+from ms_agent_eval.core.hashing import json_value
+from ms_agent_eval.core.models import SnapshotLock
+from ms_agent_eval.core.providers import ModelCallObserver
+from ms_agent_eval.core.snapshots import ExternalSnapshotStore, SnapshotBuilder
+from ms_agent_eval.core.sources import ResolvedSource
+from ms_agent_eval.core.workspace import WorkspaceRepository
+
+
+def workspace_payload(*, skills: Mapping[str, object] | None = None) -> dict[str, object]:
+    return {
+        "schema_version": 2,
+        "workspace": {"id": "synthetic-evaluation"},
+        "evaluation": {
+            "repository": {
+                "url": "https://github.com/example/synthetic",
+                "ref": "v1.0.0",
+            },
+            "instructions": {
+                "global": ["AGENTS.md"],
+                "skills": dict({"directory": "skills"} if skills is None else skills),
+            },
+            "case_builder": {
+                "dspy": {
+                    "module": "Predict",
+                    "signature": {
+                        "inputs": {
+                            "global_context": "str",
+                            "skill_context": "str",
+                            "source_context": "str",
+                            "coverage_request": "str",
+                            "existing_case_summaries": "list[str]",
+                        },
+                        "outputs": {
+                            "case_spec": "dict[str, object]",
+                            "prompt": "str",
+                            "expected_response": "str",
+                            "rubric": "dict[str, object]",
+                            "expected_artifacts": "dict[str, str]",
+                            "source_paths": "list[str]",
+                            "leakage_group": "str",
+                        },
+                    },
+                },
+                "model": {
+                    "provider": "ollama",
+                    "name_env": "BUILDER_MODEL",
+                    "endpoint_env": "OLLAMA_ENDPOINT",
+                    "parameters": {"temperature": 0.0},
+                },
+                "budget": {"model_calls": 20, "tokens": 10000},
+                "output": {"drafts": "external", "promotion": "explicit"},
+            },
+            "cases": {"directory": "cases"},
+            "splits": {"file": "cases/splits.yaml"},
+            "judge": {
+                "dspy": {
+                    "module": "Predict",
+                    "signature": {
+                        "inputs": {
+                            "task": "str",
+                            "skill_context": "str",
+                            "rubric": "str",
+                            "expected_response": "str",
+                            "expected_artifacts": "str",
+                            "candidate_response": "str",
+                        },
+                        "outputs": {
+                            "criterion_scores": "dict[str, float]",
+                            "hard_failures": "list[str]",
+                            "feedback": "str",
+                        },
+                    },
+                },
+                "model": {
+                    "provider": "ollama",
+                    "name_env": "JUDGE_MODEL",
+                    "endpoint_env": "OLLAMA_ENDPOINT",
+                    "parameters": {"temperature": 0.0},
+                },
+                "calibration": {"directory": "judge-calibration"},
+                "repetitions": 1,
+            },
+        },
+        "experiments": {
+            "baseline": {
+                "mode": "evaluate",
+                "solver": {
+                    "dspy": {
+                        "module": "Predict",
+                        "signature": {
+                            "inputs": {
+                                "global_context": "str",
+                                "skill_context": "str",
+                                "task": "str",
+                            },
+                            "outputs": {"response": "str"},
+                        },
+                    },
+                    "model": {
+                        "provider": "ollama",
+                        "name_env": "SOLVER_MODEL",
+                        "endpoint_env": "OLLAMA_ENDPOINT",
+                        "parameters": {"temperature": 0.0},
+                    },
+                },
+                "runtime": {"type": "response_only", "python": "3.12"},
+                "repetitions": 1,
+            },
+            "optimize": {
+                "mode": "optimize",
+                "based_on": "baseline",
+                "dataset": {
+                    "train": "train",
+                    "development": "development",
+                    "final_evaluation": "test",
+                },
+                "optimizer": {
+                    "name": "LabeledFewShot",
+                    "parameters": {"k": 1, "seed": 0},
+                },
+                "budget": {
+                    "solver": {"model_calls": 20, "tokens": 10000},
+                    "judge": {"model_calls": 30, "tokens": 10000},
+                    "wall_seconds": 300,
+                },
+                "output": {"compiled_program": "content_addressed_json"},
+            },
+        },
+    }
+
+
+def create_workspace(root: Path) -> WorkspaceRepository:
+    root.mkdir(parents=True)
+    payload = workspace_payload()
+    payload["workspace"]["data_root"] = (root.parent / "runtime").as_posix()  # type: ignore[index]
+    (root / "workspace.yaml").write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+    (root / "cases").mkdir()
+    (root / "judge-calibration").mkdir()
+    return WorkspaceRepository.from_file(root / "workspace.yaml")
+
+
+def create_checkout(root: Path) -> Path:
+    checkout = root / "checkout"
+    for skill in ("alpha", "beta", "gamma"):
+        path = checkout / "skills" / skill
+        path.mkdir(parents=True, exist_ok=True)
+        (path / "SKILL.md").write_text(f"# {skill}\n\nUse {skill}.\n", encoding="utf-8")
+    (checkout / "AGENTS.md").write_text("# Global\n\nBe precise.\n", encoding="utf-8")
+    return checkout
+
+
+def create_snapshot(
+    repository: WorkspaceRepository, checkout: Path, data_root: Path
+) -> tuple[SnapshotLock, Path]:
+    source = repository.target_specification().source
+    resolved = ResolvedSource(
+        source.repository_url,
+        source.repository_url + ".git",
+        source.ref,
+        "a" * 40,
+    )
+    store = ExternalSnapshotStore(data_root, workspace_root=repository.root)
+    lock = SnapshotBuilder(None, store).create_from_checkout(  # type: ignore[arg-type]
+        repository.target_specification(), resolved, checkout
+    )
+    return lock, store.directory(lock)
+
+
+def create_case(
+    cases_root: Path,
+    *,
+    case_id: str,
+    skill: str,
+    group: str,
+    source_path: str,
+    builder_model_hash: str = f"sha256:{'1' * 64}",
+    builder_program_hash: str = f"sha256:{'2' * 64}",
+    source_snapshot_hash: str = f"sha256:{'3' * 64}",
+) -> CaseDefinition:
+    directory = cases_root / skill / case_id
+    expected = directory / "expected"
+    expected.mkdir(parents=True)
+    (directory / "prompt.md").write_text(f"Solve {case_id}.\n", encoding="utf-8")
+    (expected / "response.md").write_text(f"Correct {case_id}.\n", encoding="utf-8")
+    (directory / "rubric.yaml").write_text(
+        yaml.safe_dump(
+            {
+                "passing_score": 0.8,
+                "criteria": [
+                    {
+                        "id": "correctness",
+                        "weight": 1.0,
+                        "description": "The response is correct.",
+                    }
+                ],
+                "hard_failures": [{"id": "unsafe", "description": "The response is unsafe."}],
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+    payload = {
+        "schema_version": 2,
+        "id": case_id,
+        "title": f"Case {case_id}",
+        "skill": skill,
+        "group": group,
+        "prompt": "prompt.md",
+        "expected": "expected/response.md",
+        "rubric": "rubric.yaml",
+        "source_paths": [source_path],
+        "provenance": {
+            "builder_model_hash": builder_model_hash,
+            "builder_program_hash": builder_program_hash,
+            "source_snapshot_hash": source_snapshot_hash,
+            "generation_request_hash": f"sha256:{'4' * 64}",
+            "draft_content_hash": "pending",
+        },
+    }
+    case_file = directory / "case.yaml"
+    case_file.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+    package_hash = CaseDefinition.load(directory, verify_provenance=False).content_hash
+    payload["provenance"]["draft_content_hash"] = package_hash  # type: ignore[index]
+    case_file.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+    return CaseDefinition.load(directory)
+
+
+def seed_cases_and_calibration(
+    repository: WorkspaceRepository,
+    *,
+    builder_model_hash: str = f"sha256:{'1' * 64}",
+    builder_program_hash: str = f"sha256:{'2' * 64}",
+    source_snapshot_hash: str = f"sha256:{'3' * 64}",
+) -> None:
+    cases = [
+        create_case(
+            repository.cases_root,
+            case_id="case-train",
+            skill="alpha",
+            group="group-train",
+            source_path="skills/alpha/SKILL.md",
+            builder_model_hash=builder_model_hash,
+            builder_program_hash=builder_program_hash,
+            source_snapshot_hash=source_snapshot_hash,
+        ),
+        create_case(
+            repository.cases_root,
+            case_id="case-development",
+            skill="beta",
+            group="group-development",
+            source_path="skills/beta/SKILL.md",
+            builder_model_hash=builder_model_hash,
+            builder_program_hash=builder_program_hash,
+            source_snapshot_hash=source_snapshot_hash,
+        ),
+        create_case(
+            repository.cases_root,
+            case_id="case-test",
+            skill="gamma",
+            group="group-test",
+            source_path="skills/gamma/SKILL.md",
+            builder_model_hash=builder_model_hash,
+            builder_program_hash=builder_program_hash,
+            source_snapshot_hash=source_snapshot_hash,
+        ),
+    ]
+    (repository.cases_root / "splits.yaml").write_text(
+        yaml.safe_dump(
+            {
+                "schema_version": 2,
+                "groups": {
+                    "group-train": "train",
+                    "group-development": "development",
+                    "group-test": "test",
+                },
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+    fixtures = []
+    ranges = {
+        "strong": [0.9, 1.0],
+        "partial": [0.4, 0.7],
+        "incorrect": [0.0, 0.2],
+        "contradictory": [0.0, 0.2],
+        "adversarial": [0.0, 0.2],
+    }
+    for label, score_range in ranges.items():
+        candidate = repository.calibration_root / f"{label}.md"
+        candidate.write_text(f"{label} candidate\n", encoding="utf-8")
+        fixtures.append(
+            {
+                "id": label,
+                "case": cases[0].id,
+                "candidate": candidate.name,
+                "label": label,
+                "score_range": score_range,
+            }
+        )
+    (repository.calibration_root / "manifest.yaml").write_text(
+        yaml.safe_dump({"schema_version": 2, "fixtures": fixtures}, sort_keys=False),
+        encoding="utf-8",
+    )
+
+
+class FixedObservedLM(dspy.BaseLM):
+    def __init__(
+        self,
+        observer: ModelCallObserver,
+        responses: Sequence[str],
+        *,
+        model: str,
+    ) -> None:
+        super().__init__(model=model, cache=False)
+        self.observer = observer
+        self.responses = list(responses)
+
+    def forward(self, prompt=None, messages=None, **kwargs):  # type: ignore[no-untyped-def]
+        if not self.responses:
+            raise AssertionError(f"no fixed response remains for {self.model}")
+        output = self.responses.pop(0)
+        rendered = messages or [{"role": "user", "content": prompt}]
+        started = time.monotonic()
+        response = ModelResponse(
+            model=self.model,
+            choices=[{"message": {"role": "assistant", "content": output}}],
+            usage={"prompt_tokens": 1, "completion_tokens": 1, "total_tokens": 2},
+        )
+        self.observer.completed(
+            provider_id="fixed",
+            model=self.model,
+            parameters={},
+            messages=rendered,
+            request={"messages": rendered},
+            response=json_value(response.model_dump()),  # type: ignore[arg-type]
+            usage={"prompt_tokens": 1, "completion_tokens": 1, "total_tokens": 2},
+            latency_seconds=time.monotonic() - started,
+            configured_cost=0.0,
+        )
+        return response
+
+
+def solver_response(value: str = "correct") -> str:
+    return f"[[ ## response ## ]]\n{value}\n\n[[ ## completed ## ]]"
+
+
+def judge_response(score: float) -> str:
+    return (
+        "[[ ## criterion_scores ## ]]\n"
+        f'{{"correctness": {score}}}\n\n'
+        "[[ ## hard_failures ## ]]\n[]\n\n"
+        "[[ ## feedback ## ]]\nGrounded feedback.\n\n"
+        "[[ ## completed ## ]]"
+    )
+
+
+def builder_response(case_id: str = "built-case") -> str:
+    return (
+        "[[ ## case_spec ## ]]\n"
+        f'{{"id": "{case_id}", "title": "Built case", "skill": "alpha"}}\n\n'
+        "[[ ## prompt ## ]]\nExplain alpha.\n\n"
+        "[[ ## expected_response ## ]]\nUse alpha precisely.\n\n"
+        "[[ ## rubric ## ]]\n"
+        '{"passing_score": 0.8, "criteria": [{"id": "correctness", '
+        '"weight": 1.0, "description": "Correct use."}], "hard_failures": []}\n\n'
+        "[[ ## expected_artifacts ## ]]\n{}\n\n"
+        "[[ ## source_paths ## ]]\n[" + '"skills/alpha/SKILL.md"' + "]\n\n"
+        "[[ ## leakage_group ## ]]\nalpha-concept\n\n"
+        "[[ ## completed ## ]]"
+    )
