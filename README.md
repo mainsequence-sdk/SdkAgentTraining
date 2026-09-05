@@ -1,24 +1,73 @@
 # MS Agent Eval
 
-MS Agent Eval is a Python 3.12+ DSPy evaluation framework for arbitrary GitHub
+MS Agent Eval is a Python 3.12+ DSPy evaluation framework for arbitrary source
 repositories. A repository URL/ref and its instruction paths are configuration;
 the evaluated project is never a dependency of this library.
 
-Every scored workflow has three distinct LLM roles:
+The framework has no built-in target repository. Each experiment workspace
+independently selects its repository, immutable revision, instruction sources,
+cases, rubrics, and models.
+
+## Technology at a glance
+
+| Technology | How it is used |
+|---|---|
+| Python 3.12+ | Framework implementation and `ms-agent-eval` command-line interface. |
+| DSPy 3.2 | The only prompt-programming layer. Typed DSPy signatures define the case builder, solver, and judge; `LabeledFewShot` compiles optimized solver state. |
+| Ollama | Current local LLM provider for all three roles through DSPy's LM interface. Each role must use a different model identity. |
+| YAML / PyYAML | Human-readable workspace configuration, case metadata, rubrics, split assignments, and judge-calibration manifests. |
+| Git | Resolves a repository URL plus tag or commit into an immutable source snapshot with recorded provenance. |
+| Docker | Optional digest-pinned sandbox for commands that must execute against the target repository. Response-only evaluations do not require a container. |
+| SHA-256 + JSON artifacts | Identifies snapshots, programs, inputs, calls, and results so runs are reproducible and auditable. |
+| External filesystem storage | Keeps snapshots, drafts, model-call evidence, compiled DSPy programs, runs, and reports under `~/ms_agent_eval/<workspace-id>` instead of committing them. |
+| `uv`, Hatchling, pytest, Ruff | Dependency/environment management, package builds, tests, and linting. |
+
+The target repository is data, not a Python dependency of the framework. The
+framework snapshots it, loads only the configured instructions and cases, asks
+the selected LLMs to build/solve/judge, and writes all mutable evidence outside
+both repositories.
+
+## How an experiment runs
+
+Every scored workflow has three distinct LLM roles and a strict data boundary:
 
 ```mermaid
-flowchart LR
-    Repo["GitHub repo + tag/commit"] --> Snapshot["Immutable external snapshot"]
-    Snapshot --> Builder["DSPy case-builder LLM"]
-    Builder --> Drafts["External validated drafts"]
-    Drafts -->|"explicit promote"| Cases["Versioned cases + rubrics"]
-    Cases --> Solver["DSPy solver LLM"]
-    Cases --> Judge["DSPy judge LLM"]
-    Solver --> Judge
-    Judge --> Results["External scores and call evidence"]
-    Cases --> TrainDev["Train + development"]
-    TrainDev --> Compile["State-only DSPy JSON"]
-    Compile --> Test["Untouched test evaluation"]
+flowchart TB
+    subgraph Definition["Versioned experiment definition"]
+        Workspace["workspace.yaml"]
+        Cases["Promoted cases + rubrics"]
+        Splits["Grouped train / development / test splits"]
+        Workspace --> Cases
+        Cases --> Splits
+    end
+
+    subgraph Authoring["Case authoring"]
+        Repo["Repository URL + tag/commit"] --> Snapshot["Immutable external snapshot"]
+        Workspace --> Snapshot
+        Snapshot --> Builder["1. DSPy case-builder LLM"]
+        Builder --> Drafts["External validated drafts"]
+        Drafts -->|"explicit human promotion"| Cases
+    end
+
+    subgraph Baseline["Baseline evaluation"]
+        Cases --> Solver["2. DSPy solver LLM"]
+        Solver --> Candidate["Candidate response"]
+        Candidate --> Judge["3. DSPy LLM judge"]
+        Cases -->|"rubric + expected result"| Judge
+        Judge --> BaselineResults["External scores + call evidence"]
+    end
+
+    subgraph Optimization["DSPy optimization experiment"]
+        Splits --> Train["Train cases"]
+        Train --> Compile["LabeledFewShot compile"]
+        Compile --> Development["Development solve + LLM judge"]
+        Splits --> Development
+        Development --> Published["Publish state-only DSPy JSON"]
+        Published --> Test["Load untouched test cases"]
+        Splits --> Test
+        Test --> Final["Optimized solver + LLM judge"]
+        Final --> OptimizedResults["External held-out results"]
+    end
 ```
 
 - The case builder authors grounded prompts, expected results, rubrics, source
@@ -99,15 +148,40 @@ are versioned.
 Start with [Getting started](docs/getting-started.md), then read
 [Repository structure](docs/structure.md) and [Conventions](docs/conventions.md).
 
-## Repository layout
+## Storage layout
+
+There are two locations with different ownership. The Git repository contains
+reusable code and reviewable experiment definitions:
 
 ```text
-.agents/skills/              repository-local authoring workflows
-src/ms_agent_eval/           one installable library
-experiments/mainsequence-sdk one example workspace
-tests/                       synthetic three-LLM acceptance tests
-docs/                        current guides and historical task records
+repository/
+├── .agents/skills/             framework authoring workflows
+├── src/ms_agent_eval/          repository-agnostic library and CLI
+├── experiments/
+│   └── <workspace>/
+│       ├── workspace.yaml      target, instructions, cases, models, runtime
+│       ├── .env.example        credential-free environment template
+│       ├── cases/              promoted cases, rubrics, provenance, splits
+│       └── judge-calibration/  human-labelled judge fixtures
+├── tests/                      generic framework acceptance tests
+└── docs/                       guides and architecture records
 ```
+
+Mutable and generated data belongs outside Git under the workspace data root:
+
+```text
+~/ms_agent_eval/<workspace-id>/
+├── snapshots/                  immutable target-repository snapshots
+├── case-drafts/                builder drafts awaiting explicit promotion
+├── blobs/sha256/               content-addressed responses, traces, and state
+├── manifests/                  locks, model calls, runs, scores, and reports
+└── tmp/                        atomic staging
+```
+
+There is no root-level `cases/`, `sdk/`, or `runs/` directory. Cases belong to
+their experiment workspace; repository snapshots and every generated run
+artifact belong to the external data root. Adding a target means adding a new
+workspace, not changing `src/ms_agent_eval` or copying an SDK into this repo.
 
 ## Verify
 

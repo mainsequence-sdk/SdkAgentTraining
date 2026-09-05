@@ -10,12 +10,18 @@ case builder, solver, and LLM judge.
 3. [Framework conventions](conventions.md) — identities, provenance, judging, and splits.
 4. [Ollama workflow](ollama-workflow.md) — configure the three local model roles.
 5. [Target source workflow](target-source-workflow.md) — immutable repository snapshots.
-6. [MainSequence template](../experiments/mainsequence-sdk/README.md) — concrete bootstrap-to-run example.
 
 ## Architecture
 
 - [Three-LLM DSPy workspace](implementation_tasks/017-dspy-only-workspace-ux.md)
-- [MainSequence v4.4.5 snapshot equivalence](architecture/mainsequence-v4.4.5-snapshot-equivalence.md)
+
+## Repository-specific examples
+
+Examples demonstrate how a target repository consumes the generic framework;
+they are not part of the core architecture or required workflow.
+
+- [MainSequence SDK workspace](../experiments/mainsequence-sdk/README.md)
+- [MainSequence SDK snapshot audit](../experiments/mainsequence-sdk/docs/v4.4.5-snapshot-equivalence.md)
 
 Numbered files under [implementation_tasks](implementation_tasks/) are the
 historical implementation record. When an older task conflicts with task 017,

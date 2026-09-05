@@ -35,7 +35,7 @@ Check identities before calling a model:
 
 ```bash
 uv run ms-agent-eval inspect \
-  --workspace experiments/mainsequence-sdk/workspace.yaml
+  --workspace /path/to/workspace.yaml
 ```
 
 Then use the builder, baseline, or optimization commands described in

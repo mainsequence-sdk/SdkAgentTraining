@@ -66,7 +66,7 @@ hash.
 Detailed report:
 
 ```text
-docs/architecture/mainsequence-v4.4.5-snapshot-equivalence.md
+experiments/mainsequence-sdk/docs/v4.4.5-snapshot-equivalence.md
 ```
 
 Results:

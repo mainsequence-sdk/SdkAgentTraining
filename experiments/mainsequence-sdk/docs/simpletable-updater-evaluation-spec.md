@@ -1,6 +1,6 @@
 # SimpleTableUpdater Evaluation Spec
 
-This document defines how to evaluate Main Sequence `SimpleTableUpdater` construction cases against the installed SDK.
+This workspace document defines how to evaluate Main Sequence `SimpleTableUpdater` construction cases against the installed SDK.
 
 Current checked SDK basis: `mainsequence==3.17.38`
 

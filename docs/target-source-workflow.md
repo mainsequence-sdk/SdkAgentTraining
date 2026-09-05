@@ -44,7 +44,3 @@ such as `.agents/skills` works only when the manifest explicitly selects it.
 
 The default external location is `~/ms_agent_eval/<workspace-id>/snapshots`.
 Set `workspace.data_root` to another path outside the Git workspace when needed.
-
-The MainSequence example selects GitHub tag `v4.4.5`, global instruction
-`agent_scaffold/AGENTS.md`, and the complete `agent_scaffold/skills` directory.
-Those are MainSequence workspace choices, not library defaults.

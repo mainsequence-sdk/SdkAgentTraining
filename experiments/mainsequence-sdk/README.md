@@ -77,3 +77,10 @@ uv run ms-agent-eval run optimize-few-shot \
 empty case bank and calibration corpus as explicit blockers. `run` remains
 strict and cannot start the solver until source, builder provenance, splits,
 three model identities, and judge calibration are complete.
+
+## Workspace-specific documentation
+
+- [DataNode evaluation specification](docs/datanode-evaluation-spec.md)
+- [SimpleTable evaluation specification](docs/simpletable-evaluation-spec.md)
+- [SimpleTableUpdater evaluation specification](docs/simpletable-updater-evaluation-spec.md)
+- [v4.4.5 snapshot equivalence audit](docs/v4.4.5-snapshot-equivalence.md)
